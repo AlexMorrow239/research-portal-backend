@@ -1,8 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  private readonly logger = new Logger(AppService.name);
+
+  getRoot(): string {
+    this.logger.debug('getRoot method called'); // This won't show up now
+    return 'Research Portal API';
   }
 }

@@ -5,8 +5,10 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log'] // Only show errors and warnings
+  });
+  // const app = await NestFactory.create(AppModule)
   // Global Pipes & Filters
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -24,6 +26,16 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  // Log all registered routes
+  // const server = app.getHttpServer();
+  // const router = server._events.request._router;
+  // console.log('Registered Routes:');
+  // router.stack.forEach(layer => {
+  //   if (layer.route) {
+  //     console.log(`${layer.route.stack[0].method.toUpperCase()} ${layer.route.path}`);
+  //   }
+  // });
 
   await app.listen(process.env.PORT ?? 3000);
   
