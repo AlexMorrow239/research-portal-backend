@@ -21,7 +21,7 @@ async function bootstrap() {
     .setTitle('Research Portal API')
     .setDescription('University of Miami Research Portal API')
     .setVersion('1.0')
-    .addTag('research')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

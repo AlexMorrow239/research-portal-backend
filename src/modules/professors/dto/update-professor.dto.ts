@@ -1,30 +1,25 @@
-import { IsString, IsOptional, ValidateNested, MaxLength } from 'class-validator';
+import { IsString, IsOptional, ValidateNested, MaxLength, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
-class UpdateNameDto {
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  firstName?: string;
-
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
-  lastName?: string;
-}
+import { NameDto } from './create-professor.dto';
 
 export class UpdateProfessorDto {
   @ApiPropertyOptional()
   @ValidateNested()
-  @Type(() => UpdateNameDto)
+  @Type(() => NameDto)
   @IsOptional()
-  name?: UpdateNameDto;
+  name?: NameDto;
 
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   title?: string;
+
+  @ApiPropertyOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  researchAreas?: string[];
 
   @ApiPropertyOptional()
   @IsString()
@@ -38,7 +33,7 @@ export class UpdateProfessorDto {
 
   @ApiPropertyOptional()
   @IsString()
-  @IsOptional()
   @MaxLength(1000)
+  @IsOptional()
   bio?: string;
 }

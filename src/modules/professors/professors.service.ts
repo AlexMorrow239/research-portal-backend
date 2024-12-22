@@ -6,6 +6,7 @@ import { CreateProfessorDto } from './dto/create-professor.dto';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { ProfessorResponseDto } from './dto/professor-response.dto';
+import { UpdateProfessorDto } from './dto/update-professor.dto';
 
 
 @Injectable()
@@ -70,22 +71,110 @@ export class ProfessorsService {
     } as ProfessorResponseDto;
   }
 
-  private validatePassword(password: string): void {
-    if (password.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters long');
+  async updateProfile(
+    professorId: string,
+    updateProfileDto: UpdateProfessorDto
+  ): Promise<ProfessorResponseDto> {
+    const professor = await this.professorModel.findById(professorId);
+    
+    if (!professor) {
+      throw new NotFoundException('Professor not found');
     }
+  
+    const updatedProfessor = await this.professorModel.findByIdAndUpdate(
+      professorId,
+      { $set: updateProfileDto },
+      { new: true }
+    );
+  
+    const { password: _, ...result } = updatedProfessor.toObject();
+    return result as ProfessorResponseDto;
+  }
 
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if (!hasUpperCase || !hasLowerCase || !hasNumbers || !hasSpecialChar) {
+  async deactivateAccount(professorId: string): Promise<void> {
+    const professor = await this.professorModel.findById(professorId);
+    
+    if (!professor) {
+      throw new NotFoundException('Professor not found');
+    }
+  
+    await this.professorModel.findByIdAndUpdate(professorId, {
+      isActive: false
+    });
+  }
+  
+  private validatePassword(password: string): void {
+    const requirements = {
+      minLength: { met: password.length >= 8, message: 'at least 8 characters' },
+      upperCase: { met: /[A-Z]/.test(password), message: 'one uppercase letter' },
+      lowerCase: { met: /[a-z]/.test(password), message: 'one lowercase letter' },
+      numbers: { met: /\d/.test(password), message: 'one number' },
+      specialChar: { 
+        met: /[!@#$%^&*(),.?":{}|<>]/.test(password), 
+        message: 'one special character (!@#$%^&*(),.?":{}|<>)'
+      }
+    };
+  
+    const failedRequirements = Object.entries(requirements)
+      .filter(([_, { met }]) => !met)
+      .map(([_, { message }]) => message);
+  
+    if (failedRequirements.length > 0) {
+      const missingRequirements = failedRequirements.join(', ');
       throw new BadRequestException(
-        'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+        `Password must contain ${missingRequirements}. ` +
+        'Example of valid password: "Research2024!"'
       );
     }
   }
+  
+  async changePassword(
+    professorId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const professor = await this.professorModel.findById(professorId);
+    
+    if (!professor) {
+      throw new NotFoundException('Professor not found');
+    }
+  
+    const isPasswordValid = await bcrypt.compare(currentPassword, professor.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        'Current password is incorrect. Please try again or use the "Forgot Password" feature if you cannot remember your password.'
+      );
+    }
+  
+    // Check if new password is same as current password
+    const isSamePassword = await bcrypt.compare(newPassword, professor.password);
+    if (isSamePassword) {
+      throw new BadRequestException(
+        'New password must be different from your current password. ' +
+        'Please choose a password you haven\'t used before.'
+      );
+    }
+  
+    this.validatePassword(newPassword);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+  
+    await this.professorModel.findByIdAndUpdate(professorId, {
+      password: hashedPassword
+    });
+  }
+
+  async getProfile(professorId: string): Promise<ProfessorResponseDto> {
+    const professor = await this.professorModel.findById(professorId);
+    
+    if (!professor) {
+      throw new NotFoundException('Professor not found');
+    }
+  
+    const { password: _, ...result } = professor.toObject();
+    return result as ProfessorResponseDto;
+  }
+
+
 
   async findByUsername(username: string): Promise<Professor> {
     const professor = await this.professorModel.findOne({ username }).exec();

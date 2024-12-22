@@ -2,7 +2,7 @@ import { IsString, IsEmail, IsNotEmpty, ValidateNested, MinLength, IsOptional, M
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-class NameDto {
+export class NameDto {
   @ApiProperty({ example: 'John' })
   @IsString()
   @IsNotEmpty()
