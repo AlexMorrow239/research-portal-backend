@@ -15,8 +15,8 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return "Research Portal API"', () => {
+      expect(appController.getRoot()).toBe('Research Portal API');
     });
   });
 });
