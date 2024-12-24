@@ -9,6 +9,24 @@ export enum ProjectStatus {
 }
 
 @Schema({ timestamps: true })
+export class ProjectFile {
+  @Prop({ required: true })
+  fileName: string;
+
+  @Prop({ required: true })
+  originalName: string;
+
+  @Prop({ required: true })
+  mimeType: string;
+
+  @Prop({ required: true })
+  size: number;
+
+  @Prop({ required: true })
+  uploadedAt: Date;
+}
+
+@Schema({ timestamps: true })
 export class Project extends Document {
   @Prop({ required: true })
   title: string;
@@ -50,6 +68,9 @@ export class Project extends Document {
 
   @Prop({ default: false })
   isVisible: boolean;
+
+  @Prop({ type: [ProjectFile], default: [] })
+files: ProjectFile[];
 
   createdAt: Date;
   updatedAt: Date;

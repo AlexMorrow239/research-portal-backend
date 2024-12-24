@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ProjectStatus } from '../schemas/projects.schema';
+import { ProjectFileDto } from './project-file.dto';
 
 export class ProjectResponseDto {
   @ApiProperty()
@@ -47,6 +48,9 @@ export class ProjectResponseDto {
 
   @ApiProperty()
   isVisible: boolean;
+
+  @ApiProperty({ type: [ProjectFileDto] })
+  files: ProjectFileDto[];
 
   @ApiProperty()
   createdAt: Date;

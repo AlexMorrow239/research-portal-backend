@@ -4,6 +4,7 @@ import { ProjectsService } from './projects.service';
 import { ProjectsController } from './projects.controller';
 import { Project, ProjectSchema } from './schemas/projects.schema';
 import { ProfessorsModule } from '../professors/professors.module';
+import { FileStorageModule } from '../file-storage/file-storage.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ProfessorsModule } from '../professors/professors.module';
       { name: Project.name, schema: ProjectSchema },
     ]),
     ProfessorsModule,
+    FileStorageModule,
   ],
   providers: [ProjectsService],
   controllers: [ProjectsController],
