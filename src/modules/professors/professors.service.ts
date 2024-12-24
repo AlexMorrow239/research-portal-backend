@@ -7,6 +7,9 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { ProfessorResponseDto } from './dto/professor-response.dto';
 import { UpdateProfessorDto } from './dto/update-professor.dto';
+import { InvalidEmailDomainException } from './exceptions/invalid-email-domain.exception';
+import { InvalidPasswordFormatException } from './exceptions/invalid-password-format.exception';
+import { InvalidAdminPasswordException } from './exceptions/password.exception';
 
 
 @Injectable()
@@ -17,50 +20,66 @@ export class ProfessorsService {
   ) {}
 
   async create(createProfessorDto: CreateProfessorDto): Promise<ProfessorResponseDto> {
-    const { email, adminPassword } = createProfessorDto;
-    
-    // Verify admin password
+    // 1. Verify admin password first
     const correctAdminPassword = this.configService.get<string>('ADMIN_PASSWORD');
-    if (adminPassword !== correctAdminPassword) {
-      throw new UnauthorizedException('Invalid admin password');
-    }
-    
-    // Validate email domain
-    if (!email.endsWith('@miami.edu')) {
-      throw new BadRequestException('Email must be a valid miami.edu address');
+    if (createProfessorDto.adminPassword !== correctAdminPassword) {
+      throw new InvalidAdminPasswordException();
     }
   
-    // Check if professor already exists
-    const existingProfessor = await this.professorModel.findOne({ email });
+    // 2. Validate email domain using the EmailDomainPipe logic
+    const validDomains = ['@miami.edu', '@med.miami.edu', '@cd.miami.edu'];
+    if (!validDomains.some(domain => createProfessorDto.email.endsWith(domain))) {
+      throw new InvalidEmailDomainException();
+    }
+  
+    // 3. Check if email already exists
+    const existingProfessor = await this.professorModel.findOne({ 
+      email: createProfessorDto.email 
+    });
     
     if (existingProfessor) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException({
+        statusCode: 409,
+        message: 'Email already exists',
+        error: 'Conflict'
+      });
     }
   
-    // Validate password strength
-    this.validatePassword(createProfessorDto.password);
+    // 4. Validate password
+    const passwordRequirements = this.validatePassword(createProfessorDto.password);
+    if (passwordRequirements.length > 0) {
+      throw new InvalidPasswordFormatException(passwordRequirements);
+    }
   
-    // Hash password
+    // Create professor if all validations pass
     const hashedPassword = await bcrypt.hash(createProfessorDto.password, 10);
-  
-    // Remove adminPassword before saving
     const { adminPassword: _, ...professorData } = createProfessorDto;
     
-    // Create new professor
     const newProfessor = await this.professorModel.create({
       ...professorData,
       password: hashedPassword,
       isActive: true,
     });
   
-    // Remove sensitive data from response
     const { password: __, ...result } = newProfessor.toObject();
-    return {
-      ...result,
-      id: result._id,
-      createdAt: newProfessor.createdAt,
-      updatedAt: newProfessor.updatedAt
-    } as ProfessorResponseDto;
+    return result as ProfessorResponseDto;
+  }
+  
+  private validatePassword(password: string): string[] {
+    const requirements = {
+      minLength: { met: password.length >= 8, message: 'at least 8 characters' },
+      upperCase: { met: /[A-Z]/.test(password), message: 'one uppercase letter' },
+      lowerCase: { met: /[a-z]/.test(password), message: 'one lowercase letter' },
+      numbers: { met: /\d/.test(password), message: 'one number' },
+      specialChar: { 
+        met: /[!@#$%^&*(),.?":{}|<>]/.test(password), 
+        message: 'one special character (!@#$%^&*(),.?":{}|<>)'
+      }
+    };
+  
+    return Object.entries(requirements)
+      .filter(([_, { met }]) => !met)
+      .map(([_, { message }]) => message);
   }
 
   async updateProfile(
@@ -93,31 +112,6 @@ export class ProfessorsService {
     await this.professorModel.findByIdAndUpdate(professorId, {
       isActive: false
     });
-  }
-  
-  private validatePassword(password: string): void {
-    const requirements = {
-      minLength: { met: password.length >= 8, message: 'at least 8 characters' },
-      upperCase: { met: /[A-Z]/.test(password), message: 'one uppercase letter' },
-      lowerCase: { met: /[a-z]/.test(password), message: 'one lowercase letter' },
-      numbers: { met: /\d/.test(password), message: 'one number' },
-      specialChar: { 
-        met: /[!@#$%^&*(),.?":{}|<>]/.test(password), 
-        message: 'one special character (!@#$%^&*(),.?":{}|<>)'
-      }
-    };
-  
-    const failedRequirements = Object.entries(requirements)
-      .filter(([_, { met }]) => !met)
-      .map(([_, { message }]) => message);
-  
-    if (failedRequirements.length > 0) {
-      const missingRequirements = failedRequirements.join(', ');
-      throw new BadRequestException(
-        `Password must contain ${missingRequirements}. ` +
-        'Example of valid password: "Research2024!"'
-      );
-    }
   }
   
   async changePassword(
@@ -164,17 +158,5 @@ export class ProfessorsService {
   
     const { password: _, ...result } = professor.toObject();
     return result as ProfessorResponseDto;
-  }
-
-
-
-  async findByUsername(username: string): Promise<Professor> {
-    const professor = await this.professorModel.findOne({ username }).exec();
-    
-    if (!professor) {
-      throw new NotFoundException('Professor not found');
-    }
-    
-    return professor;
   }
 }
