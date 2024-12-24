@@ -54,3 +54,18 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Ignore everything in uploads directory
+/uploads/*
+
+# But keep the uploads directory itself and applications subdirectory
+!/uploads/.gitkeep
+!/uploads/applications/
+/uploads/applications/*
+!/uploads/applications/.gitkeep
+
+# Ignore any other subdirectories that might be created
+/uploads/**/*
+
+# Ignore temp files that might be created during upload process
+*.upload.tmp
