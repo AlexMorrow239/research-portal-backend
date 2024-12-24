@@ -10,6 +10,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { join } from 'path';
+import { ApplicationsModule } from './modules/applications/applications.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { join } from 'path';
     AuthModule,
     ProfessorsModule,
     ProjectsModule, 
+    ApplicationsModule
   ],
   controllers: [AppController],
   providers: [AppService]

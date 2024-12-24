@@ -1,65 +1,105 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createWriteStream, existsSync, mkdirSync, unlink } from 'fs';
+import * as fs from 'fs/promises';
+import { existsSync } from 'fs';
 import { join } from 'path';
-import { promisify } from 'util';
 
-const unlinkAsync = promisify(unlink);
+const ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 @Injectable()
 export class FileStorageService {
   private readonly uploadDir: string;
-  private readonly maxFileSize: number;
-  private readonly allowedMimeTypes: string[];
 
   constructor(private configService: ConfigService) {
     this.uploadDir = configService.get('UPLOAD_DIR', 'uploads');
-    this.maxFileSize = configService.get('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB default
-    this.allowedMimeTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-
-    // Create uploads directory if it doesn't exist
-    if (!existsSync(this.uploadDir)) {
-        mkdirSync(this.uploadDir, { recursive: true });
-        }
+    this.initializeUploadDir();
   }
 
-  async saveFile(file: Express.Multer.File, projectId: string): Promise<string> {
+  private async initializeUploadDir() {
+    try {
+      if (!existsSync(this.uploadDir)) {
+        await fs.mkdir(this.uploadDir, { recursive: true });
+      }
+    } catch (error) {
+      console.error('Error creating upload directory:', error);
+      throw error;
+    }
+  }
+
+  async saveFile(file: Express.Multer.File, subDir: string): Promise<string> {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
-
-    if (file.size > this.maxFileSize) {
-      throw new BadRequestException(`File size exceeds ${this.maxFileSize / 1024 / 1024}MB limit`);
+  
+    if (file.size > MAX_FILE_SIZE) {
+      throw new BadRequestException(`File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit`);
     }
-
-    if (!this.allowedMimeTypes.includes(file.mimetype)) {
+  
+    if (!ALLOWED_FILE_TYPES.includes(file.mimetype)) {
       throw new BadRequestException('Invalid file type. Allowed types: PDF, DOC, DOCX');
     }
+  
+    const fileName = `${Date.now()}-${file.originalname}`;
+    const fullDir = join(this.uploadDir, subDir);
+    const fullPath = join(fullDir, fileName);
+  
+    try {
+      // Create subdirectory if it doesn't exist
+      await fs.mkdir(fullDir, { recursive: true });
+      
+      // Write file
+      await fs.writeFile(fullPath, file.buffer);
+      
+      return join(subDir, fileName); // Return relative path
+    } catch (error) {
+      console.error('Error saving file:', error);
+      throw new BadRequestException('Error saving file');
+    }
+  }
 
-    const fileName = `${projectId}-${Date.now()}-${file.originalname}`;
+  async getFile(fileName: string): Promise<{ buffer: Buffer; mimeType: string }> {
     const filePath = join(this.uploadDir, fileName);
 
-    return new Promise((resolve, reject) => {
-      const writeStream = createWriteStream(filePath);
-      writeStream.write(file.buffer);
-      writeStream.end();
+    try {
+      const buffer = await fs.readFile(filePath);
+      const mimeType = this.getMimeType(fileName);
 
-      writeStream.on('finish', () => resolve(fileName));
-      writeStream.on('error', reject);
-    });
+      return { buffer, mimeType };
+    } catch (error) {
+      throw new NotFoundException('File not found');
+    }
   }
 
   async deleteFile(fileName: string): Promise<void> {
+    const filePath = join(this.uploadDir, fileName);
+
     try {
-      await unlinkAsync(join(this.uploadDir, fileName));
+      await fs.unlink(filePath);
     } catch (error) {
-      if (error.code !== 'ENOENT') {
-        throw error;
+      if (error.code !== 'ENOENT') { // Ignore if file doesn't exist
+        console.error('Error deleting file:', error);
+        throw new BadRequestException('Error deleting file');
       }
+    }
+  }
+
+  private getMimeType(fileName: string): string {
+    const ext = fileName.toLowerCase().split('.').pop();
+    switch (ext) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      default:
+        return 'application/octet-stream';
     }
   }
 }

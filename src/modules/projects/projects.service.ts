@@ -109,22 +109,22 @@ export class ProjectsService {
     }
     async findOne(id: string): Promise<ProjectResponseDto> {
         const project = await this.projectModel
-        .findById(id)
-        .populate('professor', 'name department')
-        .exec();
+          .findById(id)
+          .populate('professor', 'name department id') // Added 'id' to populated fields
+          .exec();
     
         if (!project) {
-        throw new NotFoundException('Project not found');
+          throw new NotFoundException('Project not found');
         }
     
         return {
-        id: project._id.toString(),
-        ...project.toObject(),
-        professor: {
-            id: project.professor._id,
+          id: project._id.toString(),
+          ...project.toObject(),
+          professor: {
+            id: project.professor._id, // Ensure professor ID is included
             name: project.professor.name,
             department: project.professor.department
-        }
+          }
         };
     }
 
