@@ -46,17 +46,18 @@ export class FileStorageService {
     }
   
     const fileName = `${Date.now()}-${file.originalname}`;
-    const fullDir = join(this.uploadDir, subDir);
+    const fullDir = join(this.uploadDir, 'projects', subDir);
     const fullPath = join(fullDir, fileName);
   
     try {
-      // Create subdirectory if it doesn't exist
+      // Create project-specific subdirectory if it doesn't exist
       await fs.mkdir(fullDir, { recursive: true });
       
       // Write file
       await fs.writeFile(fullPath, file.buffer);
       
-      return join(subDir, fileName); // Return relative path
+      // Return path relative to uploads directory
+      return join('projects', subDir, fileName);
     } catch (error) {
       console.error('Error saving file:', error);
       throw new BadRequestException('Error saving file');

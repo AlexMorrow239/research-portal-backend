@@ -1,10 +1,11 @@
-# compiled output
+# Compiled output
 /dist
 /node_modules
 /build
+/.nest
 
 # Logs
-logs
+/logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
@@ -14,10 +15,14 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
+.tmp
+.temp
 
 # Tests
 /coverage
 /.nyc_output
+/test/coverage
 
 # IDEs and editors
 /.idea
@@ -27,45 +32,81 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
-
-# IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files
+# Environment files
 .env
 .env.development.local
 .env.test.local
 .env.production.local
 .env.local
-
-# temp directory
-.temp
-.tmp
+*.env
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
+# Diagnostic reports
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# Ignore everything in uploads directory
+# Uploads directory structure
 /uploads/*
-
-# But keep the uploads directory itself and applications subdirectory
 !/uploads/.gitkeep
+
+# Project files structure
+!/uploads/projects/
+/uploads/projects/*
+!/uploads/projects/.gitkeep
+
+# Applications directory
 !/uploads/applications/
 /uploads/applications/*
 !/uploads/applications/.gitkeep
 
-# Ignore any other subdirectories that might be created
-/uploads/**/*
+# Resumes directory
+!/uploads/resumes/
+/uploads/resumes/*
+!/uploads/resumes/.gitkeep
 
-# Ignore temp files that might be created during upload process
+# Temporary files
+*.tmp
+*.temp
 *.upload.tmp
+*.swp
+*.swo
+
+# Dependencies
+.pnp
+.pnp.js
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Misc
+.DS_Store
+*.pem
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
