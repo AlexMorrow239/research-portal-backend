@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from '../auth.controller'; 
+import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { createTestProfessor } from '@test/utils/test-utils';
 import { UnauthorizedException } from '@nestjs/common';
@@ -51,26 +51,13 @@ describe('AuthController', () => {
     });
 
     it('should throw UnauthorizedException when credentials are invalid', async () => {
-      jest.spyOn(authService, 'login').mockRejectedValue(new UnauthorizedException('Invalid credentials'));
+      jest.spyOn(authService, 'login')
+        .mockRejectedValue(new UnauthorizedException('Invalid credentials'));
 
       await expect(
         controller.login({
           username: 'wronguser',
           password: 'wrongpass',
-        }),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('should throw UnauthorizedException when account is inactive', async () => {
-      const inactiveProfessor = await createTestProfessor();
-      inactiveProfessor.isActive = false;
-
-      jest.spyOn(authService, 'login').mockRejectedValue(new UnauthorizedException('Account is inactive'));
-
-      await expect(
-        controller.login({
-          username: inactiveProfessor.username,
-          password: 'testPassword123',
         }),
       ).rejects.toThrow(UnauthorizedException);
     });

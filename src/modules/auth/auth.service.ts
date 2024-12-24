@@ -1,19 +1,21 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ProfessorsService } from '../professors/professors.service';
+import { Professor } from '../professors/schemas/professors.schema';
 import * as bcrypt from 'bcrypt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private professorsService: ProfessorsService,
+    @InjectModel(Professor.name) private professorModel: Model<Professor>,
     private jwtService: JwtService,
   ) {}
 
-  async validateProfessor(username: string, password: string) {
+  async validateProfessor(email: string, password: string) {
     let professor;
     try {
-      professor = await this.professorsService.findByUsername(username);
+      professor = await this.professorModel.findOne({ email });
     } catch (error) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -32,13 +34,11 @@ export class AuthService {
     return professor;
   }
 
-  async login(username: string, password: string) {
-    
-    const professor = await this.validateProfessor(username, password);
+  async login(email: string, password: string) {
+    const professor = await this.validateProfessor(email, password);
 
     const payload = {
       sub: professor._id,
-      username: professor.username,
       email: professor.email,
     };
 
@@ -46,10 +46,10 @@ export class AuthService {
       accessToken: this.jwtService.sign(payload),
       professor: {
         id: professor._id,
-        username: professor.username,
-        name: professor.name,
         email: professor.email,
+        name: professor.name,
         department: professor.department,
+        title: professor.title,
       },
     };
   }

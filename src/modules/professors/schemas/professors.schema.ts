@@ -3,8 +3,12 @@ import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class Professor extends Document {
-  @Prop({ required: true, unique: true })
-  username: string;
+  @Prop({
+    required: true,
+    unique: true,
+    match: /^[a-zA-Z0-9._-]+@miami\.edu$/,
+  })
+  email: string;
 
   @Prop({ required: true })
   password: string;
@@ -20,13 +24,6 @@ export class Professor extends Document {
     firstName: string;
     lastName: string;
   };
-
-  @Prop({
-    required: true,
-    unique: true,
-    match: /^[a-zA-Z0-9._-]+@miami\.edu$/,
-  })
-  email: string;
 
   @Prop({ required: true })
   department: string;

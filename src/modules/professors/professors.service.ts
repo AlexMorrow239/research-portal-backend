@@ -17,7 +17,7 @@ export class ProfessorsService {
   ) {}
 
   async create(createProfessorDto: CreateProfessorDto): Promise<ProfessorResponseDto> {
-    const { username, email, adminPassword } = createProfessorDto;
+    const { email, adminPassword } = createProfessorDto;
     
     // Verify admin password
     const correctAdminPassword = this.configService.get<string>('ADMIN_PASSWORD');
@@ -29,22 +29,14 @@ export class ProfessorsService {
     if (!email.endsWith('@miami.edu')) {
       throw new BadRequestException('Email must be a valid miami.edu address');
     }
-
+  
     // Check if professor already exists
-    const existingProfessor = await this.professorModel.findOne({
-      $or: [
-        { username },
-        { email },
-      ],
-    });
+    const existingProfessor = await this.professorModel.findOne({ email });
     
     if (existingProfessor) {
-      if (existingProfessor.username === username) {
-        throw new ConflictException('Username already exists');
-      }
       throw new ConflictException('Email already exists');
     }
-
+  
     // Validate password strength
     this.validatePassword(createProfessorDto.password);
   
@@ -60,7 +52,7 @@ export class ProfessorsService {
       password: hashedPassword,
       isActive: true,
     });
-
+  
     // Remove sensitive data from response
     const { password: __, ...result } = newProfessor.toObject();
     return {

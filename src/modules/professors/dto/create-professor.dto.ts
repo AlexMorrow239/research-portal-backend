@@ -15,11 +15,14 @@ export class NameDto {
 }
 
 export class CreateProfessorDto {
-  @ApiProperty({ example: 'jdoe', minLength: 3 })
-  @IsString()
+  @ApiProperty({ 
+    example: 'john.doe@miami.edu', 
+    description: 'University of Miami email address (will be used as username)',
+    pattern: '^[a-zA-Z0-9._-]+@miami\\.edu$' 
+  })
+  @IsEmail()
   @IsNotEmpty()
-  @MinLength(3)
-  username: string;
+  email: string;
 
   @ApiProperty({ example: 'Password123!', minLength: 8 })
   @IsString()
@@ -36,11 +39,6 @@ export class CreateProfessorDto {
   @ValidateNested()
   @Type(() => NameDto)
   name: NameDto;
-
-  @ApiProperty({ example: 'john.doe@miami.edu', pattern: '^[a-zA-Z0-9._-]+@miami\\.edu$' })
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
 
   @ApiProperty({ example: 'Computer Science' })
   @IsString()
@@ -68,7 +66,10 @@ export class CreateProfessorDto {
   @IsOptional()
   phoneNumber?: string;
 
-  @ApiPropertyOptional({ example: 'Specializing in artificial intelligence and machine learning...' })
+  @ApiPropertyOptional({ 
+    example: 'Specializing in artificial intelligence and machine learning...',
+    maxLength: 1000 
+  })
   @IsString()
   @IsOptional()
   @MaxLength(1000)

@@ -12,8 +12,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Professor login' })
   @ApiOkResponse({ description: 'Successfully logged in' })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials '})
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto.username, loginDto.password);
+    return this.authService.login(loginDto.email, loginDto.password);
   }
 }

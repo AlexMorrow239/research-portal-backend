@@ -13,13 +13,10 @@ export class ProfessorResponseDto {
   id: string;
 
   @ApiProperty()
-  username: string;
+  email: string;
 
   @ApiProperty()
   name: NameResponseDto;
-
-  @ApiProperty()
-  email: string;
 
   @ApiProperty()
   department: string;
