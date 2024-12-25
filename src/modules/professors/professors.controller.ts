@@ -26,6 +26,7 @@ import { UpdateProfessorDto } from './dto/update-professor.dto';
 import { ProfessorResponseDto } from './dto/professor-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateProfessorDto } from './dto/create-professor.dto';
+import { ReactivateAccountDto } from './dto/reactivate-account.dto';
 
 @ApiTags('Professors')
 @Controller('professors')
@@ -103,5 +104,17 @@ export class ProfessorsController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   async deactivateAccount(@GetProfessor() professor: Professor): Promise<void> {
     await this.professorsService.deactivateAccount(professor.id);
+  }
+
+  @Post('reactivate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reactivate professor account' })
+  @ApiResponse({ status: 200, description: 'Account reactivated successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials or admin password' })
+  @ApiBadRequestResponse({ description: 'Account is already active' })
+  async reactivateAccount(
+    @Body() reactivateAccountDto: ReactivateAccountDto
+  ): Promise<void> {
+    await this.professorsService.reactivateAccount(reactivateAccountDto);
   }
 }

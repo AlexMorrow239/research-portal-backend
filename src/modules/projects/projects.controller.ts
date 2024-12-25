@@ -54,15 +54,56 @@ import { ProjectFileDto } from './dto/project-file.dto';
     @Post()
     @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Create a new research project' })
+    @ApiOperation({ 
+      summary: 'Create a new research project',
+      description: 'Creates a new research project. All dates must be in the future, and endDate must be after startDate.'
+    })
     @ApiResponse({ 
       status: HttpStatus.CREATED, 
       description: 'Project successfully created',
       type: ProjectResponseDto 
     })
-    @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+    @ApiUnauthorizedResponse({ 
+      description: 'Unauthorized - Invalid or missing JWT token' 
+    })
     @ApiBadRequestResponse({ 
-      description: 'Invalid input or project dates validation failed' 
+      description: 'Invalid input - Validation failed',
+      schema: {
+        type: 'object',
+        properties: {
+          statusCode: { type: 'number', example: 400 },
+          message: { 
+            type: 'array', 
+            items: { type: 'string' },
+            example: [
+              'title must not be empty',
+              'endDate must be after startDate',
+              'applicationDeadline must be a future date'
+            ]
+          },
+          error: { type: 'string', example: 'Bad Request' }
+        }
+      }
+    })
+    @ApiBody({
+      type: CreateProjectDto,
+      examples: {
+        valid: {
+          summary: 'Valid Project',
+          value: {
+            title: 'AI Research Assistant',
+            description: 'Research project focusing on AI',
+            department: 'Computer Science',
+            requirements: ['Python', 'Machine Learning'],
+            startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+            endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 180 days from now
+            status: 'DRAFT',
+            positions: 2,
+            tags: ['AI', 'ML'],
+            applicationDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 15 days from now
+          }
+        }
+      }
     })
     async create(
         @GetProfessor() professor: Professor,
@@ -74,46 +115,76 @@ import { ProjectFileDto } from './dto/project-file.dto';
       }
         
 
-    @Get()
-    @ApiOperation({ summary: 'List all visible research projects' })
-    @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number, defaults to 1' })
-    @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page, defaults to 10' })
-    @ApiQuery({ name: 'department', required: false, type: String, description: 'Filter by department' })
-    @ApiQuery({ name: 'status', required: false, enum: ProjectStatus, description: 'Filter by project status' })
-    @ApiQuery({ name: 'search', required: false, type: String, description: 'Search in title and description' })
-    @ApiQuery({ name: 'tags', required: false, type: [String], description: 'Filter by tags' })
-    @ApiOkResponse({ 
-    description: 'List of projects with pagination',
-    schema: {
-        properties: {
-        projects: {
-            type: 'array',
-            items: { $ref: getSchemaPath(ProjectResponseDto) }
-        },
-        total: {
-            type: 'number',
-            description: 'Total number of projects matching the criteria'
+      @Get()
+      @ApiOperation({ 
+        summary: 'List all visible research projects',
+        description: 'Retrieves a paginated list of research projects with various filtering options'
+      })
+      @ApiQuery({ 
+        name: 'search', 
+        required: false, 
+        type: String, 
+        description: 'Search in title, description, and tags. Supports partial matches.',
+        example: 'machine learning'
+      })
+      @ApiQuery({ 
+        name: 'tags', 
+        required: false, 
+        type: [String], 
+        description: 'Filter by multiple tags. Use comma for multiple values.',
+        example: ['AI', 'Machine Learning']
+      })
+      @ApiQuery({ 
+        name: 'department', 
+        required: false, 
+        type: String,
+        example: 'Computer Science'
+      })
+      @ApiQuery({ 
+        name: 'status', 
+        required: false, 
+        enum: ProjectStatus,
+        example: ProjectStatus.PUBLISHED
+      })
+      @ApiResponse({
+        status: 200,
+        description: 'Successfully retrieved projects',
+        schema: {
+          properties: {
+            projects: {
+              type: 'array',
+              items: { $ref: getSchemaPath(ProjectResponseDto) }
+            },
+            total: {
+              type: 'number',
+              example: 50
+            }
+          }
         }
-        }
-    }
-    })
-    async findAll(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('department') department?: string,
-    @Query('status') status?: ProjectStatus,
-    @Query('search') search?: string,
-    @Query('tags') tags?: string[],
-    ): Promise<{ projects: ProjectResponseDto[]; total: number }> {
-    return this.projectsService.findAll({
-        page,
-        limit,
-        department,
-        status,
-        search,
-        tags: Array.isArray(tags) ? tags : tags ? [tags] : undefined,
-    });
-    }
+      })
+      async findAll(
+        @Query('page') page?: number,
+        @Query('limit') limit?: number,
+        @Query('department') department?: string,
+        @Query('status') status?: ProjectStatus,
+        @Query('search') search?: string,
+        @Query('tags') tags?: string[],
+        @Query('researchAreas') researchAreas?: string[],
+        @Query('sortBy') sortBy?: 'createdAt' | 'applicationDeadline' | 'startDate',
+        @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+      ): Promise<{ projects: ProjectResponseDto[]; total: number }> {
+        return this.projectsService.findAll({
+          page,
+          limit,
+          department,
+          status,
+          search,
+          tags: Array.isArray(tags) ? tags : tags ? [tags] : undefined,
+          researchAreas: Array.isArray(researchAreas) ? researchAreas : researchAreas ? [researchAreas] : undefined,
+          sortBy,
+          sortOrder,
+        });
+      }
 
     @Get('my-projects')
     @UseGuards(JwtAuthGuard)

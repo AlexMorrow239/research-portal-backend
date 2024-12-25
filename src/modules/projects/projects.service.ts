@@ -18,7 +18,41 @@ export class ProjectsService {
 
     async create(professor: Professor, createProjectDto: CreateProjectDto): Promise<ProjectResponseDto> {
         console.log('Creating project with professor:', professor);
-        console.log('Project DTO:', createProjectDto);
+        console.log('Creating project with data:', {
+            startDate: createProjectDto.startDate,
+            endDate: createProjectDto.endDate,
+            applicationDeadline: createProjectDto.applicationDeadline
+        });
+
+            // Parse dates explicitly
+        const startDate = new Date(createProjectDto.startDate);
+        const endDate = new Date(createProjectDto.endDate);
+        const applicationDeadline = new Date(createProjectDto.applicationDeadline);
+        const now = new Date();
+
+        console.log('Parsed dates:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        applicationDeadline: applicationDeadline.toISOString(),
+        now: now.toISOString()
+        });
+
+        // Additional service-level validation
+        if (createProjectDto.startDate <= now) {
+            throw new BadRequestException('Start date must be in the future');
+        }
+        
+        if (createProjectDto.endDate <= createProjectDto.startDate) {
+            throw new BadRequestException('End date must be after start date');
+        }
+        
+        if (createProjectDto.applicationDeadline <= now) {
+            throw new BadRequestException('Application deadline must be in the future');
+        }
+        
+        if (createProjectDto.applicationDeadline >= createProjectDto.startDate) {
+            throw new BadRequestException('Application deadline must be before start date');
+        }
         
         try {
         const project = await this.projectModel.create({
@@ -46,67 +80,97 @@ export class ProjectsService {
     }
 
     async findAll(query: {
-    page?: number;
-    limit?: number;
-    department?: string;
-    status?: ProjectStatus;
-    search?: string;
-    tags?: string[];
-    }): Promise<{ projects: ProjectResponseDto[]; total: number }> {
-    const { 
-        page = 1, 
-        limit = 10, 
-        department, 
-        status,
-        search,
-        tags 
-    } = query;
-
-    const filter: any = {};
-
-    if (department) {
-        filter.department = department;
-    }
-
-    if (status) {
-        filter.status = status;
-    }
-
-    if (search) {
-        filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-        ];
-    }
-
-    if (tags && tags.length > 0) {
-        filter.tags = { $all: tags };
-    }
-
-    const [projects, total] = await Promise.all([
-        this.projectModel
-        .find(filter)
-        .populate('professor', 'name department email')
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .sort({ createdAt: -1 })
-        .exec(),
-        this.projectModel.countDocuments(filter)
-    ]);
-
-    return {
-        projects: projects.map(project => ({
-        id: project._id.toString(),
-        ...project.toObject(),
-        professor: {
-            id: project.professor._id,
-            name: project.professor.name,
-            department: project.professor.department
+        page?: number;
+        limit?: number;
+        department?: string;
+        status?: ProjectStatus;
+        search?: string;
+        tags?: string[];
+        researchAreas?: string[];
+        sortBy?: 'createdAt' | 'applicationDeadline' | 'startDate';
+        sortOrder?: 'asc' | 'desc';
+      }): Promise<{ projects: ProjectResponseDto[]; total: number }> {
+        const { 
+          page = 1, 
+          limit = 10, 
+          department, 
+          status,
+          search,
+          tags,
+          researchAreas,
+          sortBy = 'createdAt',
+          sortOrder = 'desc'
+        } = query;
+      
+        const filter: any = {};
+      
+        // Base filters
+        if (department) {
+          filter.department = department;
         }
-        })),
-        total
-    };
-    }
+      
+        if (status) {
+          filter.status = status;
+        }
+      
+        // Enhanced search with text index
+        if (search) {
+          filter.$or = [
+            { title: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { tags: { $regex: search, $options: 'i' } }
+          ];
+        }
+      
+        // Enhanced tag filtering with partial matches
+        if (tags && tags.length > 0) {
+          filter.tags = {
+            $in: tags.map(tag => new RegExp(tag, 'i'))
+          };
+        }
+      
+        // Research areas filtering
+        if (researchAreas && researchAreas.length > 0) {
+          filter.$or = [
+            ...(filter.$or || []),
+            { 'professor.researchAreas': { $in: researchAreas } }
+          ];
+        }
+      
+        // Visibility filter (always show only visible projects)
+        filter.isVisible = true;
+      
+        // Dynamic sorting
+        const sortOptions: any = {
+          [sortBy]: sortOrder === 'desc' ? -1 : 1
+        };
+      
+        const [projects, total] = await Promise.all([
+          this.projectModel
+            .find(filter)
+            .populate('professor', 'name department email researchAreas')
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort(sortOptions)
+            .exec(),
+          this.projectModel.countDocuments(filter)
+        ]);
+      
+        return {
+          projects: projects.map(project => ({
+            id: project._id.toString(),
+            ...project.toObject(),
+            professor: {
+              id: project.professor._id,
+              name: project.professor.name,
+              department: project.professor.department,
+              researchAreas: project.professor.researchAreas
+            }
+          })),
+          total
+        };
+      }
+
     async findOne(id: string): Promise<ProjectResponseDto> {
         const project = await this.projectModel
           .findById(id)

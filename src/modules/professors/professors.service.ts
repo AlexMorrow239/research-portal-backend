@@ -10,6 +10,7 @@ import { UpdateProfessorDto } from './dto/update-professor.dto';
 import { InvalidEmailDomainException } from './exceptions/invalid-email-domain.exception';
 import { InvalidPasswordFormatException } from './exceptions/invalid-password-format.exception';
 import { InvalidAdminPasswordException } from './exceptions/password.exception';
+import { ReactivateAccountDto } from './dto/reactivate-account.dto';
 
 
 @Injectable()
@@ -158,5 +159,37 @@ export class ProfessorsService {
   
     const { password: _, ...result } = professor.toObject();
     return result as ProfessorResponseDto;
+  }
+
+  async reactivateAccount(reactivateAccountDto: ReactivateAccountDto): Promise<void> {
+    const { email, password, adminPassword } = reactivateAccountDto;
+  
+    // Verify admin password
+    const correctAdminPassword = this.configService.get<string>('ADMIN_PASSWORD');
+    if (adminPassword !== correctAdminPassword) {
+      throw new InvalidAdminPasswordException();
+    }
+  
+    // Find professor
+    const professor = await this.professorModel.findOne({ email });
+    if (!professor) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, professor.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  
+    // Check if account is already active
+    if (professor.isActive) {
+      throw new BadRequestException('Account is already active');
+    }
+  
+    // Reactivate account
+    await this.professorModel.findByIdAndUpdate(professor.id, {
+      isActive: true
+    });
   }
 }

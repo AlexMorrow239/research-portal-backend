@@ -10,8 +10,12 @@ async function bootstrap() {
   });
   // const app = await NestFactory.create(AppModule)
   // Global Pipes & Filters
-  app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
+  }));  app.useGlobalFilters(new HttpExceptionFilter());
   
   // CORS
   app.enableCors();

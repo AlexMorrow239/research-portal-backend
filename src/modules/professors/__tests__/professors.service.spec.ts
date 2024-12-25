@@ -3,11 +3,12 @@ import { ProfessorsService } from '../professors.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { Professor } from '../schemas/professors.schema';
 import { ConfigService } from '@nestjs/config';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
 import { createTestProfessor } from '@test/utils/test-utils';
 import { InvalidEmailDomainException } from '../exceptions/invalid-email-domain.exception';
 import { InvalidPasswordFormatException } from '../exceptions/invalid-password-format.exception';
 import { InvalidAdminPasswordException } from '../exceptions/password.exception';
+import * as bcrypt from 'bcrypt'
 
 describe('ProfessorsService', () => {
   let service: ProfessorsService;
@@ -155,6 +156,31 @@ describe('ProfessorsService', () => {
       await expect(
         service.updateProfile('nonexistent-id', updateProfileDto)
       ).rejects.toThrow('Professor not found');
+    });
+  });
+
+  describe('reactivateAccount', () => {
+    const reactivateDto = {
+      email: 'test@miami.edu',
+      password: 'Test123!@#',
+      adminPassword: 'admin123'
+    };
+  
+    it('should reactivate an inactive account with valid credentials', async () => {
+      const professor = await createTestProfessor();
+      professor.isActive = false;
+      professor.id = professor._id; // Add this line to match implementation
+      
+      jest.spyOn(professorModel, 'findOne').mockResolvedValue(professor);
+      jest.spyOn(professorModel, 'findByIdAndUpdate').mockResolvedValue(professor);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
+  
+      await service.reactivateAccount(reactivateDto);
+  
+      expect(professorModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        professor.id,
+        { isActive: true }
+      );
     });
   });
 });
