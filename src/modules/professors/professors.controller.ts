@@ -12,21 +12,25 @@ import {
 import { 
   ApiTags, 
   ApiOperation, 
+  ApiBody, 
   ApiResponse, 
   ApiBearerAuth,
   ApiUnauthorizedResponse,
-  ApiBadRequestResponse,
-  ApiOkResponse
+  ApiConflictResponse,
+  ApiBadRequestResponse
 } from '@nestjs/swagger';
 import { ProfessorsService } from './professors.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from './decorators/get-professor.decorator';
 import { Professor } from './schemas/professors.schema';
-import { UpdateProfessorDto } from './dto/update-professor.dto';
-import { ProfessorResponseDto } from './dto/professor-response.dto';
+import { createProfessorExamples, updateProfessorExamples } from '@/common/swagger';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CreateProfessorDto } from './dto/create-professor.dto';
+import { ProfessorResponseDto } from './dto/professor-response.dto';
 import { ReactivateAccountDto } from './dto/reactivate-account.dto';
+import { UpdateProfessorDto } from './dto/update-professor.dto';
+import { ProfessorDescriptions } from '@/common/swagger/descriptions/professors.description';
+
 
 @ApiTags('Professors')
 @Controller('professors')
@@ -36,42 +40,67 @@ export class ProfessorsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register a new professor' })
+  @ApiOperation(ProfessorDescriptions.create)
+  @ApiBody({
+    type: CreateProfessorDto,
+    examples: createProfessorExamples
+  })
   @ApiResponse({ 
-    status: 201, 
+    status: HttpStatus.CREATED, 
     description: 'Professor successfully created',
     type: ProfessorResponseDto 
   })
-  @ApiResponse({ status: 401, description: 'Invalid admin password' })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  @ApiResponse({ status: 409, description: 'Username or email already exists' })
+  @ApiUnauthorizedResponse({ 
+    description: 'Invalid admin password',
+    schema: {
+      properties: {
+        statusCode: { type: 'number', example: 401 },
+        message: { type: 'string', example: 'Invalid admin password' },
+        error: { type: 'string', example: 'Unauthorized' }
+      }
+    }
+  })
+  @ApiConflictResponse({ 
+    description: 'Email already exists',
+    schema: {
+      properties: {
+        statusCode: { type: 'number', example: 409 },
+        message: { type: 'string', example: 'Email already exists' },
+        error: { type: 'string', example: 'Conflict' }
+      }
+    }
+  })
   async create(@Body() createProfessorDto: CreateProfessorDto): Promise<ProfessorResponseDto> {
     return this.professorsService.create(createProfessorDto);
   }
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get professor profile' })
+  @ApiOperation(ProfessorDescriptions.getProfile)
   @ApiResponse({ 
-    status: 200, 
-    description: 'Returns the professor profile',
+    status: HttpStatus.OK, 
+    description: 'Profile retrieved successfully',
     type: ProfessorResponseDto 
   })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async getProfile(@GetProfessor() professor: Professor): Promise<ProfessorResponseDto> {
     return this.professorsService.getProfile(professor.id);
   }
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Update professor profile' })
+  @ApiOperation(ProfessorDescriptions.updateProfile)
+  @ApiBody({
+    type: UpdateProfessorDto,
+    examples: updateProfessorExamples
+  })
   @ApiResponse({ 
-    status: 200, 
+    status: HttpStatus.OK, 
     description: 'Profile updated successfully',
     type: ProfessorResponseDto 
   })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiBadRequestResponse({ description: 'Invalid input' })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
+  @ApiBadRequestResponse({ description: 'Invalid input data' })
   async updateProfile(
     @GetProfessor() professor: Professor,
     @Body() updateProfileDto: UpdateProfessorDto
@@ -82,8 +111,24 @@ export class ProfessorsController {
   @Post('change-password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Change professor password' })
-  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiOperation(ProfessorDescriptions.changePassword)
+  @ApiBody({
+    type: ChangePasswordDto,
+    examples: {
+      valid: {
+        summary: 'Valid Password Change',
+        description: 'Example of a valid password change request',
+        value: {
+          currentPassword: 'OldPass123!',
+          newPassword: 'NewPass456!'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Password changed successfully' 
+  })
   @ApiUnauthorizedResponse({ description: 'Invalid current password' })
   @ApiBadRequestResponse({ description: 'Invalid password format' })
   async changePassword(
@@ -99,18 +144,38 @@ export class ProfessorsController {
 
   @Delete('deactivate')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Deactivate professor account' })
-  @ApiResponse({ status: 200, description: 'Account deactivated successfully' })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiOperation(ProfessorDescriptions.deactivateAccount)
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Account deactivated successfully' 
+  })
+  @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async deactivateAccount(@GetProfessor() professor: Professor): Promise<void> {
     await this.professorsService.deactivateAccount(professor.id);
   }
 
   @Post('reactivate')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Reactivate professor account' })
-  @ApiResponse({ status: 200, description: 'Account reactivated successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials or admin password' })
+  @ApiOperation(ProfessorDescriptions.reactivateAccount)
+  @ApiBody({
+    type: ReactivateAccountDto,
+    examples: {
+      valid: {
+        summary: 'Valid Reactivation Request',
+        description: 'Example of a valid account reactivation request',
+        value: {
+          email: 'professor@miami.edu',
+          password: 'Password123!',
+          adminPassword: 'admin_password'
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Account reactivated successfully' 
+  })
+  @ApiUnauthorizedResponse({ description: 'Invalid credentials or admin password' })
   @ApiBadRequestResponse({ description: 'Account is already active' })
   async reactivateAccount(
     @Body() reactivateAccountDto: ReactivateAccountDto
