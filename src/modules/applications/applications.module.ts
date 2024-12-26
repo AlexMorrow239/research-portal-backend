@@ -5,6 +5,7 @@ import { ApplicationsController } from './applications.controller';
 import { Application, ApplicationSchema } from './schemas/applications.schema';
 import { ProjectsModule } from '../projects/projects.module';
 import { FileStorageModule } from '../file-storage/file-storage.module';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { FileStorageModule } from '../file-storage/file-storage.module';
     ]),
     ProjectsModule,
     FileStorageModule,
+    EmailModule
   ],
   providers: [ApplicationsService],
   controllers: [ApplicationsController],

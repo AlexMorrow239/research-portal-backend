@@ -11,9 +11,11 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { ApplicationsModule } from './modules/applications/applications.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
+    EmailModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',

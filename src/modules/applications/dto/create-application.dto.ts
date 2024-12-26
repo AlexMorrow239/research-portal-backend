@@ -23,7 +23,7 @@ export class StudentInfoDto {
   @Type(() => NameDto)
   name: NameDto;
 
-  @ApiProperty({ example: 'student@miami.edu' })
+  @ApiProperty({ example: 'student@gmail.com' })
   @IsEmail()
   email: string;
 
