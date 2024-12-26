@@ -17,25 +17,8 @@ export class ProjectsService {
   ) {}
 
     async create(professor: Professor, createProjectDto: CreateProjectDto): Promise<ProjectResponseDto> {
-        console.log('Creating project with professor:', professor);
-        console.log('Creating project with data:', {
-            startDate: createProjectDto.startDate,
-            endDate: createProjectDto.endDate,
-            applicationDeadline: createProjectDto.applicationDeadline
-        });
 
-            // Parse dates explicitly
-        const startDate = new Date(createProjectDto.startDate);
-        const endDate = new Date(createProjectDto.endDate);
-        const applicationDeadline = new Date(createProjectDto.applicationDeadline);
         const now = new Date();
-
-        console.log('Parsed dates:', {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        applicationDeadline: applicationDeadline.toISOString(),
-        now: now.toISOString()
-        });
 
         // Additional service-level validation
         if (createProjectDto.startDate <= now) {
@@ -58,12 +41,9 @@ export class ProjectsService {
         const project = await this.projectModel.create({
             ...createProjectDto,
             professor: professor.id, 
-            status: ProjectStatus.DRAFT,
             isVisible: false,
         });
-    
-        console.log('Created project:', project);
-    
+        
         return {
             id: project._id.toString(),
             ...project.toObject(),
