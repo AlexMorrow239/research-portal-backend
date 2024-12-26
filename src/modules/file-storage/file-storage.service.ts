@@ -32,7 +32,7 @@ export class FileStorageService {
     }
   }
 
-  async saveFile(file: Express.Multer.File, subDir: string): Promise<string> {
+  async saveFile(file: Express.Multer.File, subDir: string, isProjectFile: boolean = false): Promise<string> {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -46,7 +46,10 @@ export class FileStorageService {
     }
   
     const fileName = `${Date.now()}-${file.originalname}`;
-    const fullDir = join(this.uploadDir, 'projects', subDir);
+    // If it's a project file, include 'projects' in the path, otherwise use the subDir directly
+    const fullDir = isProjectFile 
+      ? join(this.uploadDir, 'projects', subDir)
+      : join(this.uploadDir, subDir);
     const fullPath = join(fullDir, fileName);
   
     try {
@@ -57,15 +60,19 @@ export class FileStorageService {
       await fs.writeFile(fullPath, file.buffer);
       
       // Return path relative to uploads directory
-      return join('projects', subDir, fileName);
+      return isProjectFile 
+        ? join('projects', subDir, fileName)
+        : join(subDir, fileName);
     } catch (error) {
       console.error('Error saving file:', error);
       throw new BadRequestException('Error saving file');
     }
   }
 
-  async getFile(fileName: string): Promise<{ buffer: Buffer; mimeType: string }> {
-    const filePath = join(this.uploadDir, fileName);
+  async getFile(fileName: string, isProjectFile: boolean = false): Promise<{ buffer: Buffer; mimeType: string }> {
+    const filePath = isProjectFile 
+    ? join(this.uploadDir, 'projects', fileName)
+    : join(this.uploadDir, fileName);
 
     try {
       const buffer = await fs.readFile(filePath);
@@ -77,9 +84,11 @@ export class FileStorageService {
     }
   }
 
-  async deleteFile(fileName: string): Promise<void> {
-    const filePath = join(this.uploadDir, fileName);
-
+  async deleteFile(fileName: string, isProjectFile: boolean = false): Promise<void> {
+    const filePath = isProjectFile 
+      ? join(this.uploadDir, 'projects', fileName)
+      : join(this.uploadDir, fileName);
+      
     try {
       await fs.unlink(filePath);
     } catch (error) {

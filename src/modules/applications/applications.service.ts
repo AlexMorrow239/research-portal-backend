@@ -45,7 +45,7 @@ export class ApplicationsService {
   
       const fileName = await this.fileStorageService.saveFile(
         resumeFile,
-        `applications/${projectId}`,
+        `resumes`,
       );
   
       const application = await this.applicationModel.create({

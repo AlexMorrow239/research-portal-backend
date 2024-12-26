@@ -266,7 +266,7 @@ export class ProjectsService {
         throw new NotFoundException('Project not found or you don\'t have permission to modify it');
         }
 
-        const fileName = await this.fileStorageService.saveFile(file, projectId);
+        const fileName = await this.fileStorageService.saveFile(file, projectId, true);
 
         const projectFile = {
         fileName,
@@ -298,7 +298,7 @@ export class ProjectsService {
         throw new NotFoundException('Project or file not found');
         }
 
-        await this.fileStorageService.deleteFile(fileName);
+        await this.fileStorageService.deleteFile(fileName, true);
 
         await this.projectModel.findByIdAndUpdate(projectId, {
         $pull: { files: { fileName } },
