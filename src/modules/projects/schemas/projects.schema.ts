@@ -43,11 +43,11 @@ export class Project extends Document {
   @Prop({ type: [String], required: true })
   requirements: string[];
 
-  @Prop({ required: true })
-  startDate: Date;
-
-  @Prop({ required: true })
-  endDate: Date;
+  @Prop()
+  startDate?: Date;
+  
+  @Prop()
+  endDate?: Date;
 
   @Prop({ 
     type: String, 
@@ -63,8 +63,8 @@ export class Project extends Document {
   @Prop({ type: [String], default: [] })
   tags?: string[];
 
-  @Prop({ required: true })
-  applicationDeadline: Date;
+  @Prop()
+  applicationDeadline?: Date;
 
   @Prop({ default: false })
   isVisible: boolean;

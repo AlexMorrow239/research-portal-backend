@@ -25,25 +25,27 @@ export class CreateProjectDto {
   @IsString({ each: true })
   requirements: string[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '2024-06-01',
     description: 'Project start date (YYYY-MM-DD)',
     type: String
   })
   @Type(() => Date)
   @IsDate()
+  @IsOptional()
   @IsFutureDate({ message: 'Start date must be in the future' })
-  startDate: Date;
+  startDate?: Date;
   
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '2024-12-31',
     description: 'Project end date (YYYY-MM-DD)',
     type: String
   })
   @Type(() => Date)
   @IsDate()
+  @IsOptional()
   @IsAfterDate('startDate', { message: 'End date must be after start date' })
-  endDate: Date;
+  endDate?: Date;
 
   @ApiProperty({ enum: ProjectStatus, default: ProjectStatus.DRAFT })
   @IsEnum(ProjectStatus)
@@ -60,13 +62,14 @@ export class CreateProjectDto {
   @IsOptional()
   tags?: string[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '2024-05-15',
     description: 'Application deadline (YYYY-MM-DD)',
     type: String
   })
   @Type(() => Date)
   @IsDate()
+  @IsOptional()
   @IsFutureDate({ message: 'Application deadline must be in the future' })
-  applicationDeadline: Date;
+  applicationDeadline?: Date;
 }

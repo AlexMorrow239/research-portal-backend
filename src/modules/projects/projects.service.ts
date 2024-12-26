@@ -20,21 +20,25 @@ export class ProjectsService {
 
         const now = new Date();
 
-        // Additional service-level validation
-        if (createProjectDto.startDate <= now) {
-            throw new BadRequestException('Start date must be in the future');
+        // Validate dates if they are provided
+        if (createProjectDto.startDate) {
+            if (createProjectDto.startDate <= now) {
+                throw new BadRequestException('Start date must be in the future');
+            }
+            
+            if (createProjectDto.endDate && createProjectDto.endDate <= createProjectDto.startDate) {
+                throw new BadRequestException('End date must be after start date');
+            }
         }
-        
-        if (createProjectDto.endDate <= createProjectDto.startDate) {
-            throw new BadRequestException('End date must be after start date');
-        }
-        
-        if (createProjectDto.applicationDeadline <= now) {
-            throw new BadRequestException('Application deadline must be in the future');
-        }
-        
-        if (createProjectDto.applicationDeadline >= createProjectDto.startDate) {
-            throw new BadRequestException('Application deadline must be before start date');
+
+        if (createProjectDto.applicationDeadline) {
+            if (createProjectDto.applicationDeadline <= now) {
+                throw new BadRequestException('Application deadline must be in the future');
+            }
+            
+            if (createProjectDto.startDate && createProjectDto.applicationDeadline >= createProjectDto.startDate) {
+                throw new BadRequestException('Application deadline must be before start date');
+            }
         }
         
         try {
