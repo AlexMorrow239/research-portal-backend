@@ -2,14 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ApplicationStatus } from '../applications/schemas/applications.schema';
 import { EmailConfigService } from './config/email.config';
+import { EmailTemplateService } from './email-template.service';
 
 @Injectable()
 export class EmailService {
-  private readonly transporter: nodemailer.Transporter;
-  private readonly logger = new Logger(EmailService.name);
+  private readonly transporter: nodemailer.Transporter
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY = 1000; // 1 second
 
   constructor(
     private readonly emailConfigService: EmailConfigService,
+    private readonly emailTemplateService: EmailTemplateService,
+    private readonly logger: Logger,
   ) {
     const config = this.emailConfigService.getEmailConfig();
     this.transporter = nodemailer.createTransport(config);
@@ -19,21 +23,57 @@ export class EmailService {
     studentEmail: string,
     projectTitle: string,
     status: ApplicationStatus,
+    professorName: string,
+    professorNotes?: string,
   ): Promise<void> {
-    const subject = `Research Application Status Update: ${status}`;
-    const text = `Your application for "${projectTitle}" has been ${status.toLowerCase()}.`;
+    const { subject, text } = this.emailTemplateService.getStatusUpdateTemplate(
+      status,
+      projectTitle,
+      professorName,
+      professorNotes,
+    );
 
-    await this.sendEmail(studentEmail, subject, text);
+    await this.sendEmailWithRetry(studentEmail, subject, text);
+  }
+
+  private async sendEmailWithRetry(
+    to: string,
+    subject: string,
+    text: string,
+    retryCount = 0,
+  ): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: this.emailConfigService.getEmailConfig().from,
+        to,
+        subject,
+        text,
+        replyTo: this.emailConfigService.getEmailConfig().replyTo,
+      });
+      this.logger.log(`Email sent successfully to ${to}`);
+    } catch (error) {
+      if (retryCount < this.MAX_RETRIES) {
+        this.logger.warn(
+          `Failed to send email to ${to}, retrying... (${retryCount + 1}/${this.MAX_RETRIES})`,
+        );
+        await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+        return this.sendEmailWithRetry(to, subject, text, retryCount + 1);
+      }
+      this.logger.error(`Failed to send email to ${to} after ${this.MAX_RETRIES} attempts`);
+      throw error;
+    }
   }
 
   async sendApplicationConfirmation(
     studentEmail: string,
     projectTitle: string,
+    studentName: string,
   ): Promise<void> {
-    const subject = 'Research Application Received';
-    const text = `We have received your application for "${projectTitle}". You will be notified when there are updates to your application status.`;
-
-    await this.sendEmail(studentEmail, subject, text);
+    const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
+      projectTitle,
+      studentName
+    );
+    await this.sendEmailWithRetry(studentEmail, subject, text);
   }
 
   async sendProfessorNewApplication(
@@ -41,10 +81,11 @@ export class EmailService {
     projectTitle: string,
     studentName: string,
   ): Promise<void> {
-    const subject = 'New Research Application Received';
-    const text = `A new application has been submitted by ${studentName} for your research project "${projectTitle}".`;
-
-    await this.sendEmail(professorEmail, subject, text);
+    const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
+      projectTitle,
+      studentName
+    );
+    await this.sendEmailWithRetry(professorEmail, subject, text);
   }
 
   async sendDeadlineReminder(
@@ -52,10 +93,11 @@ export class EmailService {
     projectTitle: string,
     deadline: Date,
   ): Promise<void> {
-    const subject = 'Project Application Deadline Approaching';
-    const text = `The application deadline for your research project "${projectTitle}" is approaching (${deadline.toLocaleDateString()}).`;
-
-    await this.sendEmail(professorEmail, subject, text);
+    const { subject, text } = this.emailTemplateService.getDeadlineReminderTemplate(
+      projectTitle,
+      deadline
+    );
+    await this.sendEmailWithRetry(professorEmail, subject, text);
   }
 
   private async sendEmail(

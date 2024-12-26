@@ -7,4 +7,5 @@ export interface EmailConfig {
       pass: string;
     };
     from: string;
+    replyTo?: string;
   }

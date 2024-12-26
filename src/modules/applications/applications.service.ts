@@ -133,7 +133,9 @@ export class ApplicationsService {
       await this.emailService.sendApplicationStatusUpdate(
         application.studentInfo.email,
         application.project.title,
-        status
+        status,
+        `${application.project.professor.name.firstName} ${application.project.professor.name.lastName}`,
+        notes
       );
     } catch (error) {
       console.error('Failed to send email notification:', error);
