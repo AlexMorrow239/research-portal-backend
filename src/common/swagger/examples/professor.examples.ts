@@ -1,11 +1,12 @@
+import { ChangePasswordDto } from './../../../modules/professors/dto/change-password.dto';
 export const createProfessorExamples = {
     valid: {
       summary: 'Valid Professor Registration',
       description: 'Example of a valid professor registration request',
       value: {
-        email: 'new.professor@miami.edu',
+        email: 'professor.test@miami.edu',
         password: 'SecurePass123!',
-        adminPassword: 'admin_secret_password',
+        adminPassword: 'pass',
         name: {
           firstName: 'Jane',
           lastName: 'Smith'
@@ -22,9 +23,9 @@ export const createProfessorExamples = {
       summary: 'Minimal Professor Registration',
       description: 'Example with only required fields',
       value: {
-        email: 'minimal@miami.edu',
+        email: 'professor.test@miami.edu',
         password: 'SecurePass123!',
-        adminPassword: 'admin_secret_password',
+        adminPassword: 'pass',
         name: {
           firstName: 'John',
           lastName: 'Doe'
@@ -59,3 +60,52 @@ partialUpdate: {
     }
 }
 };
+
+export const changePasswordExamples = {
+  valid: {
+    summary: "Valid password change request",
+    description: "Valid password change following login flow.",
+    value: {
+      currentPassword: "SecurePass123!",
+      newPassword: "NewPass456!",
+    }
+  },
+  invalid: {
+    summary: "Invalid password change request",
+    description: "Invalid password change following login flow.",
+    value: {
+      currentPassword: "IncorrectPass",
+      newPassword: "NewPass456!",
+    }
+  },
+}
+
+export const reactivateExamples = {
+  valid: {
+    summary: 'Valid Reactivation Request',
+    description: 'Example of a valid account reactivation request following login flow.',
+    value: {
+      email: 'professor.test@miami.edu',
+      password: 'SecurePass123!',
+      adminPassword: 'pass'
+    }
+  },
+  wrongAdmin: {
+    summary: 'Invalid Admin Password',
+    description: 'Example of an invalid account reactivation due to wrong admin password.',
+    value: {
+      email: 'professor.test@miami.edu',
+      password: 'SecurePass123!',
+      adminPassword: 'wrong-admin-pass'
+    }
+  },
+  wrongCredentials: {
+    summary: 'Invalid Credentials',
+    description: 'Example of an invalid account reactivation due to wrong credentials.',
+    value: {
+      email: 'wrong@miami.edu',
+      password: 'wrongPass',
+      adminPassword: 'pass'
+    }
+  }
+}

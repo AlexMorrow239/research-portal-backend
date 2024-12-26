@@ -30,6 +30,7 @@ import { ProfessorResponseDto } from './dto/professor-response.dto';
 import { ReactivateAccountDto } from './dto/reactivate-account.dto';
 import { UpdateProfessorDto } from './dto/update-professor.dto';
 import { ProfessorDescriptions } from '@/common/swagger/descriptions/professors.description';
+import { changePasswordExamples, reactivateExamples } from '@/common/swagger/examples/professor.examples';
 
 
 @ApiTags('Professors')
@@ -114,16 +115,7 @@ export class ProfessorsController {
   @ApiOperation(ProfessorDescriptions.changePassword)
   @ApiBody({
     type: ChangePasswordDto,
-    examples: {
-      valid: {
-        summary: 'Valid Password Change',
-        description: 'Example of a valid password change request',
-        value: {
-          currentPassword: 'OldPass123!',
-          newPassword: 'NewPass456!'
-        }
-      }
-    }
+    examples: changePasswordExamples
   })
   @ApiResponse({ 
     status: HttpStatus.OK, 
@@ -159,17 +151,7 @@ export class ProfessorsController {
   @ApiOperation(ProfessorDescriptions.reactivateAccount)
   @ApiBody({
     type: ReactivateAccountDto,
-    examples: {
-      valid: {
-        summary: 'Valid Reactivation Request',
-        description: 'Example of a valid account reactivation request',
-        value: {
-          email: 'professor@miami.edu',
-          password: 'Password123!',
-          adminPassword: 'admin_password'
-        }
-      }
-    }
+    examples: reactivateExamples
   })
   @ApiResponse({ 
     status: HttpStatus.OK, 
