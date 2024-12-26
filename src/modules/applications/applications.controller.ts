@@ -171,12 +171,23 @@ import { Response } from 'express';
       @GetProfessor() professor: Professor,
       @Body() updateStatusDto: UpdateApplicationStatusDto,
     ) {
-      return this.applicationsService.updateStatus(
-        professor.id,
-        applicationId,
-        updateStatusDto.status,
-        updateStatusDto.professorNotes,
-      );
+      try {
+        const result = await this.applicationsService.updateStatus(
+          professor.id,
+          applicationId,
+          updateStatusDto.status,
+          updateStatusDto.professorNotes,
+        );
+        return result;
+      } catch (error) {
+        console.error('Error updating application status:', error);
+        if (error instanceof NotFoundException) {
+          throw error;
+        }
+        throw new InternalServerErrorException(
+          'Failed to update application status: ' + error.message
+        );
+      }
     }
   
     @Get(':applicationId/resume')

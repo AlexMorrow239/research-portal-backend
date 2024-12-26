@@ -25,7 +25,6 @@ export class StudentInfo {
 
   @Prop({
     required: true,
-    match: /^[a-zA-Z0-9._-]+@miami\.edu$/,
   })
   email: string;
 

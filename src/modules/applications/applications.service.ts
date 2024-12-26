@@ -6,6 +6,7 @@ import { CreateApplicationDto } from './dto/create-application.dto';
 import { ProjectsService } from '../projects/projects.service';
 import { FileStorageService } from '../file-storage/file-storage.service';
 import { ProjectStatus } from '../projects/schemas/projects.schema';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class ApplicationsService {
@@ -13,6 +14,7 @@ export class ApplicationsService {
     @InjectModel(Application.name) private applicationModel: Model<Application>,
     private readonly projectsService: ProjectsService,
     private readonly fileStorageService: FileStorageService,
+    private readonly emailService: EmailService
   ) {}
 
   async create(
@@ -70,23 +72,75 @@ export class ApplicationsService {
     status: ApplicationStatus,
     notes?: string,
   ): Promise<Application> {
+    console.log('Updating application status:', {
+      professorId,
+      applicationId,
+      status,
+      notes
+    });
+  
     const application = await this.applicationModel
       .findById(applicationId)
-      .populate('project');
-
+      .populate({
+        path: 'project',
+        populate: {
+          path: 'professor',
+          select: 'id email name'
+        }
+      });
+  
+    console.log('Found application:', {
+      exists: !!application,
+      applicationData: application ? {
+        id: application.id,
+        projectId: application.project?.id,
+        professorId: application.project?.professor?.id
+      } : null
+    });
+  
     if (!application) {
       throw new NotFoundException('Application not found');
     }
-
-    if (application.project.professor.toString() !== professorId) {
+  
+    // Check if project and professor are properly populated
+    if (!application.project || !application.project.professor) {
+      console.error('Project or professor not properly populated:', {
+        hasProject: !!application.project,
+        hasProfessor: !!application.project?.professor
+      });
+      throw new NotFoundException('Application project details not found');
+    }
+  
+    const projectProfessorId = application.project.professor.id?.toString();
+    console.log('Comparing professor IDs:', {
+      tokenProfessorId: professorId,
+      projectProfessorId,
+      match: projectProfessorId === professorId
+    });
+  
+    if (projectProfessorId !== professorId) {
       throw new NotFoundException('Application not found');
     }
-
-    return this.applicationModel.findByIdAndUpdate(
+  
+    const updatedApplication = await this.applicationModel.findByIdAndUpdate(
       applicationId,
       { status, professorNotes: notes },
       { new: true }
     );
+  
+    // Send email notification
+    try {
+      await this.emailService.sendApplicationStatusUpdate(
+        application.studentInfo.email,
+        application.project.title,
+        status
+      );
+    } catch (error) {
+      console.error('Failed to send email notification:', error);
+      // Continue with the update even if email fails
+    }
+  
+    return updatedApplication;
   }
 
   async findProjectApplications(
