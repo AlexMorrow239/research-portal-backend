@@ -1,0 +1,7 @@
+dist
+node_modules
+coverage
+.eslintrc.js
+jest.config.js
+uploads/
+test/jest-e2e.json
