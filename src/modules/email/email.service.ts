@@ -3,7 +3,8 @@ import * as nodemailer from 'nodemailer';
 
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
-import { ApplicationStatus } from '../applications/schemas/applications.schema';
+import { EmailTrackingService } from './email-tracking.service';
+import { Application } from '../applications/schemas/applications.schema';
 
 @Injectable()
 export class EmailService {
@@ -14,27 +15,39 @@ export class EmailService {
   constructor(
     private readonly emailConfigService: EmailConfigService,
     private readonly emailTemplateService: EmailTemplateService,
+    private readonly emailTrackingService: EmailTrackingService,
     private readonly logger: Logger,
   ) {
     const config = this.emailConfigService.getEmailConfig();
     this.transporter = nodemailer.createTransport(config);
   }
 
-  async sendApplicationStatusUpdate(
-    studentEmail: string,
-    projectTitle: string,
-    status: ApplicationStatus,
-    professorName: string,
-    professorNotes?: string,
-  ): Promise<void> {
-    const { subject, text } = this.emailTemplateService.getStatusUpdateTemplate(
-      status,
+  async sendApplicationConfirmation(application: Application, projectTitle: string): Promise<void> {
+    const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
       projectTitle,
-      professorName,
-      professorNotes,
+      `${application.studentInfo.name.firstName} ${application.studentInfo.name.lastName}`,
     );
 
-    await this.sendEmailWithRetry(studentEmail, subject, text);
+    await this.sendEmailWithRetry(application.studentInfo.email, subject, text);
+  }
+
+  async sendProfessorNewApplication(
+    professorEmail: string,
+    application: Application,
+    projectTitle: string,
+  ): Promise<void> {
+    const trackingToken = await this.emailTrackingService.createTrackingToken(application.id);
+
+    const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
+      projectTitle,
+      `${application.studentInfo.name.firstName} ${application.studentInfo.name.lastName}`,
+      application.studentInfo.major,
+      application.studentInfo.expectedGraduation.getFullYear().toString(),
+      application.statement,
+      trackingToken,
+    );
+
+    await this.sendEmailWithRetry(professorEmail, subject, text);
   }
 
   private async sendEmailWithRetry(
@@ -61,56 +74,6 @@ export class EmailService {
         return this.sendEmailWithRetry(to, subject, text, retryCount + 1);
       }
       this.logger.error(`Failed to send email to ${to} after ${this.MAX_RETRIES} attempts`);
-      throw error;
-    }
-  }
-
-  async sendApplicationConfirmation(
-    studentEmail: string,
-    projectTitle: string,
-    studentName: string,
-  ): Promise<void> {
-    const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
-      projectTitle,
-      studentName,
-    );
-    await this.sendEmailWithRetry(studentEmail, subject, text);
-  }
-
-  async sendProfessorNewApplication(
-    professorEmail: string,
-    projectTitle: string,
-    studentName: string,
-  ): Promise<void> {
-    const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
-      projectTitle,
-      studentName,
-    );
-    await this.sendEmailWithRetry(professorEmail, subject, text);
-  }
-
-  async sendDeadlineReminder(
-    professorEmail: string,
-    projectTitle: string,
-    deadline: Date,
-  ): Promise<void> {
-    const { subject, text } = this.emailTemplateService.getDeadlineReminderTemplate(
-      projectTitle,
-      deadline,
-    );
-    await this.sendEmailWithRetry(professorEmail, subject, text);
-  }
-
-  private async sendEmail(to: string, subject: string, text: string): Promise<void> {
-    try {
-      await this.transporter.sendMail({
-        from: this.emailConfigService.getEmailConfig().from,
-        to,
-        subject,
-        text,
-      });
-    } catch (error) {
-      this.logger.error(`Failed to send email to ${to}: ${error.message}`);
       throw error;
     }
   }
