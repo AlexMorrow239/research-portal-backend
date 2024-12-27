@@ -3,12 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { FileStorageService } from './../file-storage/file-storage.service';
+import { Professor } from './../professors/schemas/professors.schema';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectFileDto } from './dto/project-file.dto';
 import { ProjectResponseDto } from './dto/project-response.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project, ProjectStatus } from './schemas/projects.schema';
-import { Professor } from '../professors/schemas/professors.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -61,6 +61,7 @@ export class ProjectsService {
           id: professor.id,
           name: professor.name,
           department: professor.department,
+          email: professor.email,
         },
       };
     } catch (error) {
@@ -151,6 +152,7 @@ export class ProjectsService {
           id: project.professor._id,
           name: project.professor.name,
           department: project.professor.department,
+          email: project.professor.email,
           researchAreas: project.professor.researchAreas,
         },
       })),
@@ -161,7 +163,7 @@ export class ProjectsService {
   async findOne(id: string): Promise<ProjectResponseDto> {
     const project = await this.projectModel
       .findById(id)
-      .populate('professor', 'name department id') // Added 'id' to populated fields
+      .populate('professor', 'name department id email')
       .exec();
 
     if (!project) {
@@ -175,6 +177,7 @@ export class ProjectsService {
         id: project.professor._id, // Ensure professor ID is included
         name: project.professor.name,
         department: project.professor.department,
+        email: project.professor.email,
       },
     };
   }
@@ -199,6 +202,7 @@ export class ProjectsService {
         id: updatedProject.professor._id,
         name: updatedProject.professor.name,
         department: updatedProject.professor.department,
+        email: updatedProject.professor.email,
       },
     };
   }
@@ -231,6 +235,7 @@ export class ProjectsService {
         id: project.professor._id,
         name: project.professor.name,
         department: project.professor.department,
+        email: project.professor.email,
       },
     }));
   }

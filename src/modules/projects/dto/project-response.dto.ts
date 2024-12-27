@@ -21,6 +21,7 @@ export class ProjectResponseDto {
       lastName: string;
     };
     department: string;
+    email: string;
   };
 
   @ApiProperty()

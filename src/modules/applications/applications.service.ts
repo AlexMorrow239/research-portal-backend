@@ -44,10 +44,20 @@ export class ApplicationsService {
         status: ApplicationStatus.PENDING,
       });
 
+      // Send confirmation email to student
+      await this.emailService.sendApplicationConfirmation(application, project.title);
+
+      // Send notification email to professor
+      await this.emailService.sendProfessorNewApplication(
+        project.professor.email,
+        application,
+        project.title,
+      );
+
       return application;
     } catch (error) {
       if (error instanceof NotFoundException) {
-        throw error; // Propagate NotFoundException from ProjectsService
+        throw error;
       }
       console.error('Error creating application:', error);
       throw error;
@@ -92,20 +102,6 @@ export class ApplicationsService {
       { status, professorNotes: notes },
       { new: true },
     );
-
-    // Send email notification
-    try {
-      await this.emailService.sendApplicationStatusUpdate(
-        application.studentInfo.email,
-        application.project.title,
-        status,
-        `${application.project.professor.name.firstName} ${application.project.professor.name.lastName}`,
-        notes,
-      );
-    } catch (error) {
-      console.error('Failed to send email notification:', error);
-      // Continue with the update even if email fails
-    }
 
     return updatedApplication;
   }
