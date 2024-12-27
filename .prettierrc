@@ -15,8 +15,6 @@
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
   "parser": "typescript",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
   "importOrder": [
     "^@nestjs/(.*)$",
     "^@decorators/(.*)$",
