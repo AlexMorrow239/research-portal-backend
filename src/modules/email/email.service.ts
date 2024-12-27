@@ -36,7 +36,10 @@ export class EmailService {
     application: Application,
     projectTitle: string,
   ): Promise<void> {
-    const trackingToken = await this.emailTrackingService.createTrackingToken(application.id);
+    const trackingToken = await this.emailTrackingService.createTrackingToken(
+      application.id,
+      application.project.toString(),
+    );
 
     const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
       projectTitle,
