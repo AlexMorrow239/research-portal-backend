@@ -28,5 +28,5 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*", ".eslintrc.js"]
+  "include": ["src/**/*", ".eslintrc.js", "test"]
 }

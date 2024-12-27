@@ -1,8 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { createTestProfessor } from '@test/utils/test-utils';
-
+import { createTestProfessor } from '../../../../test/utils/test-utils';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { LoginDto } from '../dto/login.dto';

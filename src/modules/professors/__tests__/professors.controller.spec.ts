@@ -1,8 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { createTestProfessor } from '@test/utils/test-utils';
-
+import { createTestProfessor } from '../../../../test/utils/test-utils';
 import { InvalidEmailDomainException } from '../exceptions/invalid-email-domain.exception';
 import { ProfessorsController } from '../professors.controller';
 import { ProfessorsService } from '../professors.service';

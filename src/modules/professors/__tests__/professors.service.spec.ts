@@ -4,8 +4,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 
-import { createTestProfessor } from '@test/utils/test-utils';
-
+import { createTestProfessor } from '../../../../test/utils/test-utils';
 import { InvalidEmailDomainException } from '../exceptions/invalid-email-domain.exception';
 import { InvalidPasswordFormatException } from '../exceptions/invalid-password-format.exception';
 import { InvalidAdminPasswordException } from '../exceptions/password.exception';

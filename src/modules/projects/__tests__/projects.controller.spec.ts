@@ -1,8 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule, Test } from '@nestjs/testing';
 
-import { createTestProfessor } from '@test/utils/test-utils';
-
+import { createTestProfessor } from '../../../../test/utils/test-utils';
 import { ProjectsController } from '../projects.controller';
 import { ProjectsService } from '../projects.service';
 import { ProjectStatus } from '../schemas/projects.schema';
@@ -23,6 +22,7 @@ describe('ProjectsController', () => {
       id: 'test-professor-id',
       name: { firstName: 'Test', lastName: 'Professor' },
       department: 'Computer Science',
+      email: 'testprof@miami.edu',
     },
     isVisible: false,
     startDate: new Date(),

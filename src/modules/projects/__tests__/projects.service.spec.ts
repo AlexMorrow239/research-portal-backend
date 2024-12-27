@@ -2,8 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { createTestProfessor } from '@test/utils/test-utils';
-
+import { createTestProfessor } from '../../../../test/utils/test-utils';
 import { FileStorageService } from '../../file-storage/file-storage.service';
 import { ProjectsService } from '../projects.service';
 import { Project, ProjectStatus } from '../schemas/projects.schema';
@@ -114,94 +113,94 @@ describe('ProjectsService', () => {
 
   describe('findAll', () => {
     it('should return paginated projects with total count', async () => {
-        const mockProjects = [mockProject, mockProject];
-      
-        const mockQuery = {
-          populate: jest.fn().mockReturnThis(),
-          skip: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockReturnThis(),
-          sort: jest.fn().mockReturnThis(),
-          exec: jest.fn().mockResolvedValue(mockProjects),
-        };
-      
-        jest.spyOn(projectModel, 'find').mockReturnValue(mockQuery);
-        jest.spyOn(projectModel, 'countDocuments').mockResolvedValue(2);
-      
-        const result = await service.findAll({});
-      
-        expect(result.projects).toHaveLength(2);
-        expect(result.total).toBe(2);
-      });
+      const mockProjects = [mockProject, mockProject];
 
-      it('should apply filters correctly', async () => {
-        const filters = {
-          department: 'Computer Science',
-          status: ProjectStatus.PUBLISHED,
-          search: 'test',
-          tags: ['AI'],
-        };
-      
-        const mockQuery = {
-          populate: jest.fn().mockReturnThis(),
-          skip: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockReturnThis(),
-          sort: jest.fn().mockReturnThis(),
-          exec: jest.fn().mockResolvedValue([mockProject]),
-        };
-      
-        jest.spyOn(projectModel, 'find').mockReturnValue(mockQuery);
-        jest.spyOn(projectModel, 'countDocuments').mockResolvedValue(1);
-      
-        await service.findAll(filters);
-      
-        expect(projectModel.find).toHaveBeenCalled();
-      });
+      const mockQuery = {
+        populate: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue(mockProjects),
+      };
+
+      jest.spyOn(projectModel, 'find').mockReturnValue(mockQuery);
+      jest.spyOn(projectModel, 'countDocuments').mockResolvedValue(2);
+
+      const result = await service.findAll({});
+
+      expect(result.projects).toHaveLength(2);
+      expect(result.total).toBe(2);
+    });
+
+    it('should apply filters correctly', async () => {
+      const filters = {
+        department: 'Computer Science',
+        status: ProjectStatus.PUBLISHED,
+        search: 'test',
+        tags: ['AI'],
+      };
+
+      const mockQuery = {
+        populate: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([mockProject]),
+      };
+
+      jest.spyOn(projectModel, 'find').mockReturnValue(mockQuery);
+      jest.spyOn(projectModel, 'countDocuments').mockResolvedValue(1);
+
+      await service.findAll(filters);
+
+      expect(projectModel.find).toHaveBeenCalled();
+    });
   });
 
-describe('findOne', () => {
+  describe('findOne', () => {
     it('should return a project by id', async () => {
       const mockQuery = {
         populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(mockProject),
       };
       jest.spyOn(projectModel, 'findById').mockReturnValue(mockQuery);
-  
+
       const result = await service.findOne('test-project-id');
-  
+
       expect(result).toBeDefined();
       expect(result.id).toBe(mockProject._id);
     });
-  
+
     it('should throw NotFoundException when project not found', async () => {
       const mockQuery = {
         populate: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(null),
       };
       jest.spyOn(projectModel, 'findById').mockReturnValue(mockQuery);
-  
+
       await expect(service.findOne('nonexistent-id')).rejects.toThrow(NotFoundException);
     });
   });
-  
+
   describe('addProjectFile', () => {
     const mockFile = {
       originalname: 'test.pdf',
       mimetype: 'application/pdf',
       size: 1024,
     } as Express.Multer.File;
-  
+
     beforeEach(() => {
       projectModel.findOne = jest.fn();
       projectModel.findByIdAndUpdate = jest.fn();
     });
-  
+
     it('should add a file to the project', async () => {
       jest.spyOn(projectModel, 'findOne').mockResolvedValue(mockProject);
       jest.spyOn(fileStorageService, 'saveFile').mockResolvedValue('saved-file-name');
       jest.spyOn(projectModel, 'findByIdAndUpdate').mockResolvedValue(mockProject);
-  
+
       const result = await service.addProjectFile('professor-id', 'project-id', mockFile);
-  
+
       expect(result).toBeDefined();
       expect(result.fileName).toBe('saved-file-name');
       expect(result.originalName).toBe(mockFile.originalname);
