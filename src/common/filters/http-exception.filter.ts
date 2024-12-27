@@ -18,16 +18,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      ...(typeof exceptionResponse === 'object' 
-        ? exceptionResponse 
+      ...(typeof exceptionResponse === 'object'
+        ? exceptionResponse
         : { message: exceptionResponse }),
     };
 
     // Log the error
-    this.logger.error(
-      `${request.method} ${request.url}`,
-      JSON.stringify(errorResponse),
-    );
+    this.logger.error(`${request.method} ${request.url}`, JSON.stringify(errorResponse));
 
     response.status(status).json(errorResponse);
   }

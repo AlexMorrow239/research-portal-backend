@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
 import { EmailConfig } from '../interfaces/email-config.interface';
 
 @Injectable()
@@ -8,7 +9,7 @@ export class EmailConfigService {
 
   getEmailConfig(): EmailConfig {
     const environment = this.configService.get<string>('NODE_ENV');
-    
+
     if (environment === 'production') {
       return {
         host: this.configService.get<string>('SMTP_HOST', 'smtp.miami.edu'),

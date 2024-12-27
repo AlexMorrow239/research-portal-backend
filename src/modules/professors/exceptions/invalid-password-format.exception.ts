@@ -12,11 +12,11 @@ export class InvalidPasswordFormatException extends BadRequestException {
           'At least one uppercase letter',
           'At least one lowercase letter',
           'At least one number',
-          'At least one special character (!@#$%^&*(),.?":{}|<>)'
+          'At least one special character (!@#$%^&*(),.?":{}|<>)',
         ],
         missing: missingRequirements,
-        example: 'Research2024!'
-      }
+        example: 'Research2024!',
+      },
     });
   }
 }

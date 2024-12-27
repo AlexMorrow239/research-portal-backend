@@ -1,8 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsDate, IsNumber, IsArray, IsOptional, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ProjectStatus } from '../schemas/projects.schema';
+import {
+  IsString,
+  IsNotEmpty,
+  IsDate,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  Min,
+  IsEnum,
+} from 'class-validator';
+
 import { IsAfterDate, IsFutureDate } from '../../../common/validators/date.validator';
+import { ProjectStatus } from '../schemas/projects.schema';
 
 export class CreateProjectDto {
   @ApiProperty({ example: 'AI Research Assistant' })
@@ -28,18 +38,18 @@ export class CreateProjectDto {
   @ApiPropertyOptional({
     example: '2024-06-01',
     description: 'Project start date (YYYY-MM-DD)',
-    type: String
+    type: String,
   })
   @Type(() => Date)
   @IsDate()
   @IsOptional()
   @IsFutureDate({ message: 'Start date must be in the future' })
   startDate?: Date;
-  
+
   @ApiPropertyOptional({
     example: '2024-12-31',
     description: 'Project end date (YYYY-MM-DD)',
-    type: String
+    type: String,
   })
   @Type(() => Date)
   @IsDate()
@@ -65,7 +75,7 @@ export class CreateProjectDto {
   @ApiPropertyOptional({
     example: '2024-05-15',
     description: 'Application deadline (YYYY-MM-DD)',
-    type: String
+    type: String,
   })
   @Type(() => Date)
   @IsDate()

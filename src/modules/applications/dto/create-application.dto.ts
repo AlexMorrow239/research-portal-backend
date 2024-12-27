@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString, IsEmail, IsNumber, IsDate, Min, Max, ValidateNested, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsNumber,
+  IsDate,
+  Min,
+  Max,
+  ValidateNested,
+  IsNotEmpty,
+} from 'class-validator';
 
 class NameDto {
   @IsString()
@@ -16,8 +25,8 @@ export class StudentInfoDto {
   @ApiProperty({
     example: {
       firstName: 'John',
-      lastName: 'Doe'
-    }
+      lastName: 'Doe',
+    },
   })
   @ValidateNested()
   @Type(() => NameDto)

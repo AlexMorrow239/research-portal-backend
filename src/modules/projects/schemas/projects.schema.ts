@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
+
 import { Professor } from '../../professors/schemas/professors.schema';
 
 export enum ProjectStatus {
@@ -45,15 +46,15 @@ export class Project extends Document {
 
   @Prop()
   startDate?: Date;
-  
+
   @Prop()
   endDate?: Date;
 
-  @Prop({ 
-    type: String, 
+  @Prop({
+    type: String,
     enum: ProjectStatus,
     default: ProjectStatus.DRAFT,
-    required: true 
+    required: true,
   })
   status: ProjectStatus;
 
@@ -70,7 +71,7 @@ export class Project extends Document {
   isVisible: boolean;
 
   @Prop({ type: [ProjectFile], default: [] })
-files: ProjectFile[];
+  files: ProjectFile[];
 
   createdAt: Date;
   updatedAt: Date;

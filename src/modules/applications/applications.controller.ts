@@ -14,8 +14,9 @@ import {
   Query,
   HttpCode,
   HttpStatus,
-  Res
+  Res,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
@@ -27,19 +28,19 @@ import {
   ApiQuery,
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
-  ApiNotFoundResponse
+  ApiNotFoundResponse,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { application, Response } from 'express';
-import { ApplicationsService } from './applications.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { GetProfessor } from '../professors/decorators/get-professor.decorator';
-import { Professor } from '../professors/schemas/professors.schema';
-import { ApplicationStatus } from './schemas/applications.schema';
-import { createApplicationExamples, updateApplicationStatusExamples } from '@/common/swagger';
+import { Response } from 'express';
+
+import { updateApplicationStatusExamples } from '@/common/swagger';
 import { ApplicationDescriptions } from '@/common/swagger/descriptions/applications.description';
 import { ApplicationSchemas } from '@/common/swagger/schemas/application.schemas';
 
+import { ApplicationsService } from './applications.service';
+import { ApplicationStatus } from './schemas/applications.schema';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetProfessor } from '../professors/decorators/get-professor.decorator';
+import { Professor } from '../professors/schemas/professors.schema';
 
 @ApiTags('Applications')
 @Controller('projects/:projectId/applications')
@@ -51,19 +52,19 @@ export class ApplicationsController {
   @ApiOperation(ApplicationDescriptions.create)
   @ApiConsumes('multipart/form-data')
   @ApiBody(ApplicationSchemas.Create)
-  @ApiResponse({ 
-    status: HttpStatus.CREATED, 
+  @ApiResponse({
+    status: HttpStatus.CREATED,
     description: 'Application submitted successfully',
-    ...ApplicationSchemas.Response
+    ...ApplicationSchemas.Response,
   })
-  @ApiBadRequestResponse({ 
+  @ApiBadRequestResponse({
     description: 'Invalid application data or file',
     schema: {
       type: 'object',
       properties: {
         statusCode: { type: 'number', example: 400 },
-        message: { 
-          type: 'array', 
+        message: {
+          type: 'array',
           items: { type: 'string' },
           example: [
             'firstName is required',
@@ -71,23 +72,23 @@ export class ApplicationsController {
             'GPA must be between 0 and 4.0',
             'expectedGraduation must be in YYYY-MM-DD format',
             'Resume file must be PDF, DOC, or DOCX format',
-            'File size exceeds 5MB limit'
-          ]
+            'File size exceeds 5MB limit',
+          ],
         },
-        error: { type: 'string', example: 'Bad Request' }
-      }
-    }
+        error: { type: 'string', example: 'Bad Request' },
+      },
+    },
   })
-  @ApiNotFoundResponse({ 
+  @ApiNotFoundResponse({
     description: 'Project not found',
     schema: {
       type: 'object',
       properties: {
         statusCode: { type: 'number', example: 404 },
         message: { type: 'string', example: 'Project not found' },
-        error: { type: 'string', example: 'Not Found' }
-      }
-    }
+        error: { type: 'string', example: 'Not Found' },
+      },
+    },
   })
   async create(
     @Param('projectId') projectId: string,
@@ -103,11 +104,7 @@ export class ApplicationsController {
     )
     resume: Express.Multer.File,
   ) {
-    return this.applicationsService.create(
-      projectId,
-      JSON.parse(applicationData),
-      resume,
-    );
+    return await this.applicationsService.create(projectId, JSON.parse(applicationData), resume);
   }
 
   @Get()
@@ -117,17 +114,17 @@ export class ApplicationsController {
   @ApiParam({
     name: 'projectId',
     description: 'ID of the project',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiQuery({ 
-    name: 'status', 
-    enum: ApplicationStatus, 
+  @ApiQuery({
+    name: 'status',
+    enum: ApplicationStatus,
     required: false,
-    description: 'Filter applications by status' 
+    description: 'Filter applications by status',
   })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
-    description: 'List of applications retrieved successfully' 
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'List of applications retrieved successfully',
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Project not found' })
@@ -136,11 +133,7 @@ export class ApplicationsController {
     @GetProfessor() professor: Professor,
     @Query('status') status?: ApplicationStatus,
   ) {
-    return this.applicationsService.findProjectApplications(
-      professor.id, 
-      projectId,
-      status
-    );
+    return await this.applicationsService.findProjectApplications(professor.id, projectId, status);
   }
 
   @Patch(':applicationId/status')
@@ -151,21 +144,21 @@ export class ApplicationsController {
   @ApiParam({
     name: 'projectId',
     description: 'ID of the project',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiParam({
     name: 'applicationId',
     description: 'ID of the application',
-    example: '507f1f77bcf86cd799439012'
+    example: '507f1f77bcf86cd799439012',
   })
   @ApiBody({
     schema: {
-      examples: updateApplicationStatusExamples
-    }
+      examples: updateApplicationStatusExamples,
+    },
   })
-  @ApiResponse({ 
-    status: HttpStatus.OK, 
-    description: 'Application status updated successfully' 
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Application status updated successfully',
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Application not found' })
@@ -173,13 +166,13 @@ export class ApplicationsController {
   async updateStatus(
     @Param('applicationId') applicationId: string,
     @GetProfessor() professor: Professor,
-    @Body() updateStatusDto: { status: ApplicationStatus; professorNotes?: string }
+    @Body() updateStatusDto: { status: ApplicationStatus; professorNotes?: string },
   ) {
-    return this.applicationsService.updateStatus(
+    return await this.applicationsService.updateStatus(
       professor.id,
       applicationId,
       updateStatusDto.status,
-      updateStatusDto.professorNotes
+      updateStatusDto.professorNotes,
     );
   }
 
@@ -190,21 +183,21 @@ export class ApplicationsController {
   @ApiParam({
     name: 'projectId',
     description: 'ID of the project',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiParam({
     name: 'applicationId',
     description: 'ID of the application',
-    example: '507f1f77bcf86cd799439012'
+    example: '507f1f77bcf86cd799439012',
   })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Resume file',
     content: {
       'application/pdf': {},
       'application/msword': {},
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {}
-    }
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {},
+    },
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Resume file not found' })
@@ -212,10 +205,10 @@ export class ApplicationsController {
     @Param('projectId') projectId: string,
     @Param('applicationId') applicationId: string,
     @GetProfessor() professor: Professor,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     const fileData = await this.applicationsService.getResume(professor.id, applicationId);
-    
+
     res.setHeader('Content-Type', fileData.mimeType);
     res.setHeader('Content-Disposition', `attachment; filename="${fileData.fileName}"`);
     return res.send(fileData.file);

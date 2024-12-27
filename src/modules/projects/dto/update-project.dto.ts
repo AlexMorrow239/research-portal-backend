@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsDate, IsNumber, IsArray, IsOptional, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsString, IsDate, IsNumber, IsArray, IsOptional, Min, IsEnum } from 'class-validator';
+
 import { ProjectStatus } from '../schemas/projects.schema';
 
 export class UpdateProjectDto {
@@ -9,7 +10,9 @@ export class UpdateProjectDto {
   @IsOptional()
   title?: string;
 
-  @ApiPropertyOptional({ example: 'Research project focusing on developing AI-powered research tools' })
+  @ApiPropertyOptional({
+    example: 'Research project focusing on developing AI-powered research tools',
+  })
   @IsString()
   @IsOptional()
   description?: string;

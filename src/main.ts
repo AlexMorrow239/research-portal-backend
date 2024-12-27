@@ -1,22 +1,26 @@
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['error', 'warn', 'log'] // Only show errors and warnings
+    logger: ['error', 'warn', 'log'], // Only show errors and warnings
   });
   // const app = await NestFactory.create(AppModule)
   // Global Pipes & Filters
-  app.useGlobalPipes(new ValidationPipe({
-    transform: true,
-    transformOptions: {
-      enableImplicitConversion: true,
-    },
-  }));  app.useGlobalFilters(new HttpExceptionFilter());
-  
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+  app.useGlobalFilters(new HttpExceptionFilter());
+
   // CORS
   app.enableCors();
 
@@ -42,7 +46,7 @@ async function bootstrap() {
   // });
 
   await app.listen(process.env.PORT ?? 3000);
-  
+
   Logger.log('Application is starting...');
   Logger.log(`Application running on ${await app.getUrl()}`);
 }

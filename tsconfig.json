@@ -2,7 +2,13 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["src/*"],
-      "@test/*": ["test/*"]
+      "@test/*": ["test/*"],
+      "@common/*": ["src/common/*"],
+      "@modules/*": ["src/modules/*"],
+      "@filters/*": ["src/common/filters/*"],
+      "@pipes/*": ["src/common/pipes/*"],
+      "@swagger/*": ["src/common/swagger/*"],
+      "@validators/*": ["src/common/validators/*"]
     },
     "module": "commonjs",
     "declaration": true,

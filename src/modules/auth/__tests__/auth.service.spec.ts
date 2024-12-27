@@ -1,10 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../auth.service';
+import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
-import { Professor } from '../../professors/schemas/professors.schema';
-import { UnauthorizedException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
+
+import { Professor } from '../../professors/schemas/professors.schema';
+import { AuthService } from '../auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -17,7 +18,7 @@ describe('AuthService', () => {
     password: 'hashedPassword123',
     name: {
       firstName: 'Test',
-      lastName: 'Professor'
+      lastName: 'Professor',
     },
     department: 'Computer Science',
     isActive: true,
@@ -68,27 +69,27 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when professor is not found', async () => {
       jest.spyOn(professorModel, 'findOne').mockResolvedValue(null);
 
-      await expect(
-        service.login('nonexistent@miami.edu', 'password'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.login('nonexistent@miami.edu', 'password')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException when password is incorrect', async () => {
       jest.spyOn(professorModel, 'findOne').mockResolvedValue(mockProfessor);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
 
-      await expect(
-        service.login('test@miami.edu', 'wrongpassword'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.login('test@miami.edu', 'wrongpassword')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException when professor account is inactive', async () => {
       const inactiveProfessor = { ...mockProfessor, isActive: false };
       jest.spyOn(professorModel, 'findOne').mockResolvedValue(inactiveProfessor);
 
-      await expect(
-        service.login('test@miami.edu', 'password'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.login('test@miami.edu', 'password')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

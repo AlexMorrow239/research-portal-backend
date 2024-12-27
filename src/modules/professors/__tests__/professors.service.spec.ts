@@ -1,19 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ProfessorsService } from '../professors.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { Professor } from '../schemas/professors.schema';
+import { ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import * as bcrypt from 'bcrypt';
+
 import { createTestProfessor } from '@test/utils/test-utils';
+
 import { InvalidEmailDomainException } from '../exceptions/invalid-email-domain.exception';
 import { InvalidPasswordFormatException } from '../exceptions/invalid-password-format.exception';
 import { InvalidAdminPasswordException } from '../exceptions/password.exception';
-import * as bcrypt from 'bcrypt'
+import { ProfessorsService } from '../professors.service';
+import { Professor } from '../schemas/professors.schema';
 
 describe('ProfessorsService', () => {
   let service: ProfessorsService;
   let professorModel: any;
-  let configService: ConfigService;
 
   const mockConfigService = {
     get: jest.fn((key: string) => {
@@ -44,7 +45,6 @@ describe('ProfessorsService', () => {
 
     service = module.get<ProfessorsService>(ProfessorsService);
     professorModel = module.get(getModelToken(Professor.name));
-    configService = module.get<ConfigService>(ConfigService);
   });
 
   describe('create', () => {
@@ -65,34 +65,34 @@ describe('ProfessorsService', () => {
     };
 
     it('should create a professor successfully', async () => {
-        const professor = await createTestProfessor();
-        const mockNewProfessor = {
+      const professor = await createTestProfessor();
+      const mockNewProfessor = {
+        _id: professor._id,
+        email: professor.email,
+        name: professor.name,
+        department: professor.department,
+        title: professor.title,
+        isActive: true,
+        toObject: () => ({
           _id: professor._id,
           email: professor.email,
           name: professor.name,
           department: professor.department,
           title: professor.title,
           isActive: true,
-          toObject: () => ({
-            _id: professor._id,
-            email: professor.email,
-            name: professor.name,
-            department: professor.department,
-            title: professor.title,
-            isActive: true
-          })
-        };
-    
-        jest.spyOn(professorModel, 'findOne').mockResolvedValue(null);
-        jest.spyOn(professorModel, 'create').mockResolvedValue(mockNewProfessor);
-    
-        const result = await service.create(createProfessorDto);
-    
-        expect(result).toBeDefined();
-        expect(result.email).toBe(professor.email);
-        expect(result).not.toHaveProperty('password');
-        expect(result).not.toHaveProperty('adminPassword');
-      });
+        }),
+      };
+
+      jest.spyOn(professorModel, 'findOne').mockResolvedValue(null);
+      jest.spyOn(professorModel, 'create').mockResolvedValue(mockNewProfessor);
+
+      const result = await service.create(createProfessorDto);
+
+      expect(result).toBeDefined();
+      expect(result.email).toBe(professor.email);
+      expect(result).not.toHaveProperty('password');
+      expect(result).not.toHaveProperty('adminPassword');
+    });
 
     it('should throw InvalidAdminPasswordException when admin password is incorrect', async () => {
       const invalidDto = { ...createProfessorDto, adminPassword: 'wrong' };
@@ -130,16 +130,16 @@ describe('ProfessorsService', () => {
 
     it('should update professor profile successfully', async () => {
       const professor = await createTestProfessor();
-      const updatedProfessor = { 
+      const updatedProfessor = {
         ...professor,
         ...updateProfileDto,
         toObject: () => ({
           ...professor,
           ...updateProfileDto,
-          _id: professor._id
-        })
+          _id: professor._id,
+        }),
       };
-      
+
       jest.spyOn(professorModel, 'findById').mockResolvedValue(professor);
       jest.spyOn(professorModel, 'findByIdAndUpdate').mockResolvedValue(updatedProfessor);
 
@@ -153,9 +153,9 @@ describe('ProfessorsService', () => {
     it('should throw NotFoundException when professor not found', async () => {
       jest.spyOn(professorModel, 'findById').mockResolvedValue(null);
 
-      await expect(
-        service.updateProfile('nonexistent-id', updateProfileDto)
-      ).rejects.toThrow('Professor not found');
+      await expect(service.updateProfile('nonexistent-id', updateProfileDto)).rejects.toThrow(
+        'Professor not found',
+      );
     });
   });
 
@@ -163,24 +163,23 @@ describe('ProfessorsService', () => {
     const reactivateDto = {
       email: 'test@miami.edu',
       password: 'Test123!@#',
-      adminPassword: 'admin123'
+      adminPassword: 'admin123',
     };
-  
+
     it('should reactivate an inactive account with valid credentials', async () => {
       const professor = await createTestProfessor();
       professor.isActive = false;
       professor.id = professor._id; // Add this line to match implementation
-      
+
       jest.spyOn(professorModel, 'findOne').mockResolvedValue(professor);
       jest.spyOn(professorModel, 'findByIdAndUpdate').mockResolvedValue(professor);
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
-  
+
       await service.reactivateAccount(reactivateDto);
-  
-      expect(professorModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        professor.id,
-        { isActive: true }
-      );
+
+      expect(professorModel.findByIdAndUpdate).toHaveBeenCalledWith(professor.id, {
+        isActive: true,
+      });
     });
   });
 });

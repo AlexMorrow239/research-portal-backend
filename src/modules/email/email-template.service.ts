@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { ApplicationStatus } from '../applications/schemas/applications.schema';
 
 @Injectable()
@@ -96,7 +97,7 @@ What's Next:
 3. Please monitor your email for further communications
 
 Best regards,
-Research Portal Team`
+Research Portal Team`,
     };
   }
 
@@ -115,7 +116,7 @@ Research Portal Team`
   You can review this application through the Research Portal.
   
   Best regards,
-  Research Portal Team`
+  Research Portal Team`,
     };
   }
 
@@ -132,7 +133,7 @@ Research Portal Team`
   Please ensure to review any pending applications before the deadline.
   
   Best regards,
-  Research Portal Team`
+  Research Portal Team`,
     };
   }
 }

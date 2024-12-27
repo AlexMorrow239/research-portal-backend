@@ -1,8 +1,8 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
   Get,
   Patch,
   Delete,
@@ -16,10 +16,11 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiResponse, 
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
@@ -28,20 +29,21 @@ import {
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
-  getSchemaPath
+  getSchemaPath,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ProjectsService } from './projects.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { GetProfessor } from '../professors/decorators/get-professor.decorator';
-import { Professor } from '../professors/schemas/professors.schema';
+
 import { createProjectExamples, updateProjectExamples } from '@/common/swagger';
+import { ProjectDescriptions } from '@/common/swagger/descriptions/projects.description';
+
 import { CreateProjectDto } from './dto/create-project.dto';
 import { ProjectFileDto } from './dto/project-file.dto';
 import { ProjectResponseDto } from './dto/project-response.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectsService } from './projects.service';
 import { ProjectStatus } from './schemas/projects.schema';
-import { ProjectDescriptions } from '@/common/swagger/descriptions/projects.description';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetProfessor } from '../professors/decorators/get-professor.decorator';
+import { Professor } from '../professors/schemas/professors.schema';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -55,59 +57,59 @@ export class ProjectsController {
   @ApiOperation(ProjectDescriptions.create)
   @ApiBody({
     type: CreateProjectDto,
-    examples: createProjectExamples
+    examples: createProjectExamples,
   })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Project created successfully',
-    type: ProjectResponseDto
+    type: ProjectResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiBadRequestResponse({ description: 'Invalid project data' })
   async create(
     @GetProfessor() professor: Professor,
-    @Body() createProjectDto: CreateProjectDto
+    @Body() createProjectDto: CreateProjectDto,
   ): Promise<ProjectResponseDto> {
-    return this.projectsService.create(professor, createProjectDto);
+    return await this.projectsService.create(professor, createProjectDto);
   }
 
   @Get()
   @ApiOperation(ProjectDescriptions.findAll)
-  @ApiQuery({ 
-    name: 'page', 
-    required: false, 
+  @ApiQuery({
+    name: 'page',
+    required: false,
     type: Number,
-    description: 'Page number (default: 1)'
+    description: 'Page number (default: 1)',
   })
-  @ApiQuery({ 
-    name: 'limit', 
-    required: false, 
+  @ApiQuery({
+    name: 'limit',
+    required: false,
     type: Number,
-    description: 'Items per page (default: 10)'
+    description: 'Items per page (default: 10)',
   })
-  @ApiQuery({ 
-    name: 'department', 
-    required: false, 
+  @ApiQuery({
+    name: 'department',
+    required: false,
     type: String,
-    description: 'Filter by department'
+    description: 'Filter by department',
   })
-  @ApiQuery({ 
-    name: 'status', 
-    required: false, 
+  @ApiQuery({
+    name: 'status',
+    required: false,
     enum: ProjectStatus,
-    description: 'Filter by project status'
+    description: 'Filter by project status',
   })
-  @ApiQuery({ 
-    name: 'search', 
-    required: false, 
+  @ApiQuery({
+    name: 'search',
+    required: false,
     type: String,
-    description: 'Search in title and description'
+    description: 'Search in title and description',
   })
-  @ApiQuery({ 
-    name: 'tags', 
-    required: false, 
+  @ApiQuery({
+    name: 'tags',
+    required: false,
     type: [String],
-    description: 'Filter by tags (comma-separated)'
+    description: 'Filter by tags (comma-separated)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -116,14 +118,14 @@ export class ProjectsController {
       properties: {
         projects: {
           type: 'array',
-          items: { $ref: getSchemaPath(ProjectResponseDto) }
+          items: { $ref: getSchemaPath(ProjectResponseDto) },
         },
         total: {
           type: 'number',
-          example: 50
-        }
-      }
-    }
+          example: 50,
+        },
+      },
+    },
   })
   async findAll(
     @Query('page') page?: number,
@@ -133,7 +135,7 @@ export class ProjectsController {
     @Query('search') search?: string,
     @Query('tags') tags?: string[],
   ): Promise<{ projects: ProjectResponseDto[]; total: number }> {
-    return this.projectsService.findAll({
+    return await this.projectsService.findAll({
       page,
       limit,
       department,
@@ -146,58 +148,58 @@ export class ProjectsController {
   @Get('my-projects')
   @UseGuards(JwtAuthGuard)
   @ApiOperation(ProjectDescriptions.findProfessorProjects)
-  @ApiQuery({ 
-    name: 'status', 
-    required: false, 
+  @ApiQuery({
+    name: 'status',
+    required: false,
     enum: ProjectStatus,
-    description: 'Filter projects by status' 
+    description: 'Filter projects by status',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Projects retrieved successfully',
-    type: [ProjectResponseDto]
+    type: [ProjectResponseDto],
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   async findProfessorProjects(
     @GetProfessor() professor: Professor,
     @Query('status') status?: ProjectStatus,
   ): Promise<ProjectResponseDto[]> {
-    return this.projectsService.findProfessorProjects(professor.id, status);
+    return await this.projectsService.findProfessorProjects(professor.id, status);
   }
 
   @Get(':id')
   @ApiOperation(ProjectDescriptions.findOne)
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Project ID',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Project retrieved successfully',
-    type: ProjectResponseDto
+    type: ProjectResponseDto,
   })
   @ApiNotFoundResponse({ description: 'Project not found' })
   async findOne(@Param('id') id: string): Promise<ProjectResponseDto> {
-    return this.projectsService.findOne(id);
+    return await this.projectsService.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiOperation(ProjectDescriptions.update)
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Project ID',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiBody({
     type: UpdateProjectDto,
-    examples: updateProjectExamples
+    examples: updateProjectExamples,
   })
-  @ApiResponse({ 
+  @ApiResponse({
     status: HttpStatus.OK,
     description: 'Project updated successfully',
-    type: ProjectResponseDto
+    type: ProjectResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Project not found' })
@@ -205,31 +207,28 @@ export class ProjectsController {
   async update(
     @GetProfessor() professor: Professor,
     @Param('id') id: string,
-    @Body() updateProjectDto: UpdateProjectDto
+    @Body() updateProjectDto: UpdateProjectDto,
   ): Promise<ProjectResponseDto> {
-    return this.projectsService.update(professor.id, id, updateProjectDto);
+    return await this.projectsService.update(professor.id, id, updateProjectDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation(ProjectDescriptions.remove)
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Project ID',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiResponse({ 
-    status: HttpStatus.NO_CONTENT, 
-    description: 'Project deleted successfully' 
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'Project deleted successfully',
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Project not found' })
-  async remove(
-    @GetProfessor() professor: Professor,
-    @Param('id') id: string
-  ): Promise<void> {
-    await this.projectsService.remove(professor.id, id);
+  async remove(@GetProfessor() professor: Professor, @Param('id') id: string): Promise<void> {
+    return await this.projectsService.remove(professor.id, id);
   }
 
   @Post(':id/files')
@@ -237,10 +236,10 @@ export class ProjectsController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation(ProjectDescriptions.uploadFile)
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Project ID',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
   @ApiBody({
     schema: {
@@ -250,15 +249,15 @@ export class ProjectsController {
         file: {
           type: 'string',
           format: 'binary',
-          description: 'File to upload (PDF, DOC, DOCX only, max 5MB)'
-        }
-      }
-    }
+          description: 'File to upload (PDF, DOC, DOCX only, max 5MB)',
+        },
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'File uploaded successfully',
-    type: ProjectFileDto
+    type: ProjectFileDto,
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Project not found' })
@@ -276,26 +275,26 @@ export class ProjectsController {
     )
     file: Express.Multer.File,
   ): Promise<ProjectFileDto> {
-    return this.projectsService.addProjectFile(professor.id, id, file);
+    return await this.projectsService.addProjectFile(professor.id, id, file);
   }
 
   @Delete(':id/files/:fileName')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation(ProjectDescriptions.deleteFile)
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Project ID',
-    example: '507f1f77bcf86cd799439011'
+    example: '507f1f77bcf86cd799439011',
   })
-  @ApiParam({ 
-    name: 'fileName', 
+  @ApiParam({
+    name: 'fileName',
     description: 'Name of file to delete',
-    example: 'project_description.pdf'
+    example: 'project_description.pdf',
   })
-  @ApiResponse({ 
-    status: HttpStatus.NO_CONTENT, 
-    description: 'File deleted successfully' 
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'File deleted successfully',
   })
   @ApiUnauthorizedResponse({ description: 'Not authenticated' })
   @ApiNotFoundResponse({ description: 'Project or file not found' })
@@ -304,6 +303,6 @@ export class ProjectsController {
     @Param('fileName') fileName: string,
     @GetProfessor() professor: Professor,
   ): Promise<void> {
-    await this.projectsService.removeProjectFile(professor.id, id, fileName);
+    return await this.projectsService.removeProjectFile(professor.id, id, fileName);
   }
 }

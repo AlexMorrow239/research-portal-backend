@@ -1,6 +1,7 @@
-import { IsString, IsOptional, ValidateNested, MaxLength, IsArray } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsString, IsOptional, ValidateNested, MaxLength, IsArray } from 'class-validator';
+
 import { NameDto } from './create-professor.dto';
 
 export class UpdateProfessorDto {

@@ -1,6 +1,15 @@
-import { IsString, IsEmail, IsNotEmpty, ValidateNested, MinLength, IsOptional, MaxLength, IsArray } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsEmail,
+  IsNotEmpty,
+  ValidateNested,
+  MinLength,
+  IsOptional,
+  MaxLength,
+  IsArray,
+} from 'class-validator';
 
 export class NameDto {
   @ApiProperty({ example: 'John' })
@@ -15,10 +24,10 @@ export class NameDto {
 }
 
 export class CreateProfessorDto {
-  @ApiProperty({ 
-    example: 'john.doe@miami.edu', 
+  @ApiProperty({
+    example: 'john.doe@miami.edu',
     description: 'University of Miami email address (will be used as username)',
-    pattern: '^[a-zA-Z0-9._-]+@miami\\.edu$' 
+    pattern: '^[a-zA-Z0-9._-]+@miami\\.edu$',
   })
   @IsEmail()
   @IsNotEmpty()
@@ -66,9 +75,9 @@ export class CreateProfessorDto {
   @IsOptional()
   phoneNumber?: string;
 
-  @ApiPropertyOptional({ 
+  @ApiPropertyOptional({
     example: 'Specializing in artificial intelligence and machine learning...',
-    maxLength: 1000 
+    maxLength: 1000,
   })
   @IsString()
   @IsOptional()

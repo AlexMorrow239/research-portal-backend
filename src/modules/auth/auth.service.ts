@@ -1,9 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Professor } from '../professors/schemas/professors.schema';
-import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
+
+import { Professor } from '../professors/schemas/professors.schema';
 
 @Injectable()
 export class AuthService {
@@ -16,22 +17,22 @@ export class AuthService {
     let professor;
     try {
       professor = await this.professorModel.findOne({ email });
-      
+
       if (!professor) {
         throw new UnauthorizedException('Invalid credentials');
       }
-  
+
       const isPasswordValid = await bcrypt.compare(password, professor.password);
-      
+
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid credentials');
       }
-    
+
       // Check if professor is active
       if (!professor.isActive) {
         throw new UnauthorizedException('Account is inactive');
       }
-    
+
       return professor;
     } catch (error) {
       if (error instanceof UnauthorizedException) {

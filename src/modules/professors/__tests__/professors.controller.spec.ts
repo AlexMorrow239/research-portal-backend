@@ -1,11 +1,11 @@
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { createTestProfessor } from '@test/utils/test-utils';
+
+import { InvalidEmailDomainException } from '../exceptions/invalid-email-domain.exception';
 import { ProfessorsController } from '../professors.controller';
 import { ProfessorsService } from '../professors.service';
-import { createTestProfessor } from '@test/utils/test-utils';
-import { ConflictException, NotFoundException } from '@nestjs/common';
-import { InvalidEmailDomainException } from '../exceptions/invalid-email-domain.exception';
-import { InvalidPasswordFormatException } from '../exceptions/invalid-password-format.exception';
-import { Professor } from '../schemas/professors.schema';
 
 describe('ProfessorsController', () => {
   let controller: ProfessorsController;
@@ -56,7 +56,7 @@ describe('ProfessorsController', () => {
         title: 'Associate Professor',
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       jest.spyOn(professorsService, 'create').mockResolvedValue(expectedResponse);
@@ -68,21 +68,22 @@ describe('ProfessorsController', () => {
     });
 
     it('should throw InvalidEmailDomainException for invalid email domain', async () => {
-      jest.spyOn(professorsService, 'create')
-        .mockRejectedValue(new InvalidEmailDomainException());
+      jest.spyOn(professorsService, 'create').mockRejectedValue(new InvalidEmailDomainException());
 
-      await expect(controller.create({
-        ...createProfessorDto,
-        email: 'test@gmail.com',
-      })).rejects.toThrow(InvalidEmailDomainException);
+      await expect(
+        controller.create({
+          ...createProfessorDto,
+          email: 'test@gmail.com',
+        }),
+      ).rejects.toThrow(InvalidEmailDomainException);
     });
 
     it('should throw ConflictException for duplicate email', async () => {
-      jest.spyOn(professorsService, 'create')
+      jest
+        .spyOn(professorsService, 'create')
         .mockRejectedValue(new ConflictException('Email already exists'));
 
-      await expect(controller.create(createProfessorDto))
-        .rejects.toThrow(ConflictException);
+      await expect(controller.create(createProfessorDto)).rejects.toThrow(ConflictException);
     });
   });
 
@@ -105,34 +106,29 @@ describe('ProfessorsController', () => {
         title: 'Associate Professor',
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       jest.spyOn(professorsService, 'updateProfile').mockResolvedValue(expectedResponse);
 
       const result = await controller.updateProfile(
-        { ...professor, id: professor._id } as any, 
-        updateProfileDto
+        { ...professor, id: professor._id } as any,
+        updateProfileDto,
       );
 
       expect(result).toEqual(expectedResponse);
-      expect(professorsService.updateProfile).toHaveBeenCalledWith(
-        professor._id,
-        updateProfileDto
-      );
+      expect(professorsService.updateProfile).toHaveBeenCalledWith(professor._id, updateProfileDto);
     });
 
     it('should throw NotFoundException when professor not found', async () => {
       const professor = await createTestProfessor();
-      jest.spyOn(professorsService, 'updateProfile')
+      jest
+        .spyOn(professorsService, 'updateProfile')
         .mockRejectedValue(new NotFoundException('Professor not found'));
 
       await expect(
-        controller.updateProfile(
-          { ...professor, id: professor._id } as any, 
-          updateProfileDto
-        )
+        controller.updateProfile({ ...professor, id: professor._id } as any, updateProfileDto),
       ).rejects.toThrow(NotFoundException);
     });
-});
+  });
 });

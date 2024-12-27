@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
-import { ApplicationStatus } from '../applications/schemas/applications.schema';
+
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
+import { ApplicationStatus } from '../applications/schemas/applications.schema';
 
 @Injectable()
 export class EmailService {
-  private readonly transporter: nodemailer.Transporter
+  private readonly transporter: nodemailer.Transporter;
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 1000; // 1 second
 
@@ -56,7 +57,7 @@ export class EmailService {
         this.logger.warn(
           `Failed to send email to ${to}, retrying... (${retryCount + 1}/${this.MAX_RETRIES})`,
         );
-        await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY));
+        await new Promise((resolve) => setTimeout(resolve, this.RETRY_DELAY));
         return this.sendEmailWithRetry(to, subject, text, retryCount + 1);
       }
       this.logger.error(`Failed to send email to ${to} after ${this.MAX_RETRIES} attempts`);
@@ -71,7 +72,7 @@ export class EmailService {
   ): Promise<void> {
     const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
       projectTitle,
-      studentName
+      studentName,
     );
     await this.sendEmailWithRetry(studentEmail, subject, text);
   }
@@ -83,7 +84,7 @@ export class EmailService {
   ): Promise<void> {
     const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
       projectTitle,
-      studentName
+      studentName,
     );
     await this.sendEmailWithRetry(professorEmail, subject, text);
   }
@@ -95,16 +96,12 @@ export class EmailService {
   ): Promise<void> {
     const { subject, text } = this.emailTemplateService.getDeadlineReminderTemplate(
       projectTitle,
-      deadline
+      deadline,
     );
     await this.sendEmailWithRetry(professorEmail, subject, text);
   }
 
-  private async sendEmail(
-    to: string,
-    subject: string,
-    text: string,
-  ): Promise<void> {
+  private async sendEmail(to: string, subject: string, text: string): Promise<void> {
     try {
       await this.transporter.sendMail({
         from: this.emailConfigService.getEmailConfig().from,

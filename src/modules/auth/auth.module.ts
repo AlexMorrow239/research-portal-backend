@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ProfessorsModule } from '../professors/professors.module';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { ProfessorsModule } from '../professors/professors.module';
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { Professor, ProfessorSchema } from '../professors/schemas/professors.schema';
 
 @Module({
