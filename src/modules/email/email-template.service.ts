@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ApplicationStatus } from '../applications/schemas/applications.schema';
+import { ApplicationStatus } from '@common/enums';
 interface EmailTemplate {
   subject: string;
   text: string;

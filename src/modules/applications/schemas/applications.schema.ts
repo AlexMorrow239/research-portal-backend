@@ -1,13 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Project } from '../../projects/schemas/projects.schema';
-
-export enum ApplicationStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
-}
+import { ApplicationStatus } from '@/common/enums';
 
 @Schema()
 export class StudentInfo {

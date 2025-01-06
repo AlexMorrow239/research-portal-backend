@@ -4,7 +4,8 @@ import * as nodemailer from 'nodemailer';
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
 import { EmailTrackingService } from './email-tracking.service';
-import { Application, ApplicationStatus } from '../applications/schemas/applications.schema';
+import { Application } from '../applications/schemas/applications.schema';
+import { ApplicationStatus } from '@common/enums';
 
 @Injectable()
 export class EmailService {

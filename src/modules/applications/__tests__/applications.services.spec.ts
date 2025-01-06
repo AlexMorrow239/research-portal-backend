@@ -4,7 +4,8 @@ import { Model } from 'mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { ApplicationsService } from '../applications.service';
-import { Application, ApplicationStatus } from '../schemas/applications.schema';
+import { Application } from '../schemas/applications.schema';
+import { ApplicationStatus } from '@common/enums';
 import { EmailService } from '../../email/email.service';
 import { FileStorageService } from '../../file-storage/file-storage.service';
 import { ProjectsService } from '../../projects/projects.service';

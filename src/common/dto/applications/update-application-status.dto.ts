@@ -1,7 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-
-import { ApplicationStatus } from '../../../modules/applications/schemas/applications.schema';
+import { ApplicationStatus } from '@/common/enums';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
 
 export class UpdateApplicationStatusDto {
   @ApiProperty({ enum: ApplicationStatus })

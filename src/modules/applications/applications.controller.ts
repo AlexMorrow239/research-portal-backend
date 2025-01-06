@@ -34,14 +34,13 @@ import {
 import { Response } from 'express';
 
 import { ApplicationsService } from './applications.service';
-import { ApplicationStatus } from './schemas/applications.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from '../professors/decorators/get-professor.decorator';
 import { Professor } from '../professors/schemas/professors.schema';
 
 import { updateApplicationStatusExamples } from '@/common/swagger';
 import { ApplicationDescriptions } from '@/common/swagger/descriptions/applications.description';
-import { ApplicationSchemas } from '@/common/swagger/schemas/application.schemas';
+import { ApplicationStatus } from '@/common/enums';
 
 @ApiTags('Applications')
 @Controller('projects/:projectId/applications')
