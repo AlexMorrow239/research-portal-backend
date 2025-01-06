@@ -13,7 +13,13 @@ const config: Config.InitialOptions = {
   roots: ['<rootDir>/src/'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@test/(.*)$': '<rootDir>/test/$1'
+    '^@test/(.*)$': '<rootDir>/test/$1',
+    '^@common/(.*)$': '<rootDir>/src/common/$1',
+    '^@modules/(.*)$': '<rootDir>/src/modules/$1',
+    '^@filters/(.*)$': '<rootDir>/src/common/filters/$1',
+    '^@pipes/(.*)$': '<rootDir>/src/common/pipes/$1',
+    '^@swagger/(.*)$': '<rootDir>/src/common/swagger/$1',
+    '^@validators/(.*)$': '<rootDir>/src/common/validators/$1',
   },
 };
 

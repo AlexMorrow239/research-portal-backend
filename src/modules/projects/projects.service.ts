@@ -19,6 +19,20 @@ export class ProjectsService {
     private readonly fileStorageService: FileStorageService,
   ) {}
 
+  private transformToProjectResponse(project: any): ProjectResponseDto {
+    const projectObj = project.toObject ? project.toObject() : project;
+    return {
+      id: project._id.toString(),
+      ...projectObj,
+      professor: {
+        id: project.professor._id,
+        name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
+        department: project.professor.department,
+        email: project.professor.email,
+      },
+    };
+  }
+
   async create(
     professor: Professor,
     createProjectDto: CreateProjectDto,
@@ -36,16 +50,15 @@ export class ProjectsService {
         isVisible: false,
       });
 
-      return {
-        id: project._id.toString(),
-        ...project.toObject(),
+      return this.transformToProjectResponse({
+        ...project,
         professor: {
-          id: professor.id,
-          name: `${professor.name.firstName} ${professor.name.lastName}`,
+          _id: professor.id,
+          name: professor.name,
           department: professor.department,
           email: professor.email,
         },
-      };
+      });
     } catch (error) {
       console.error('Project creation error:', error);
       throw error;
@@ -117,19 +130,7 @@ export class ProjectsService {
     ]);
 
     return {
-      projects: projects.map((project) => {
-        const obj = project.toObject();
-        return {
-          id: project._id.toString(),
-          ...obj,
-          professor: {
-            id: project.professor._id,
-            name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
-            department: project.professor.department,
-            email: project.professor.email,
-          },
-        };
-      }),
+      projects: projects.map((project) => this.transformToProjectResponse(project)),
       total,
     };
   }
@@ -144,16 +145,7 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
-    return {
-      id: project._id.toString(),
-      ...project.toObject(),
-      professor: {
-        id: project.professor._id,
-        name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
-        department: project.professor.department,
-        email: project.professor.email,
-      },
-    };
+    return this.transformToProjectResponse(project);
   }
 
   async update(
@@ -169,16 +161,7 @@ export class ProjectsService {
       throw new NotFoundException("Project not found or you don't have permission to update it");
     }
 
-    return {
-      id: updatedProject._id.toString(),
-      ...updatedProject.toObject(),
-      professor: {
-        id: updatedProject.professor._id,
-        name: `${updatedProject.professor.name.firstName} ${updatedProject.professor.name.lastName}`,
-        department: updatedProject.professor.department,
-        email: updatedProject.professor.email,
-      },
-    };
+    return this.transformToProjectResponse(updatedProject);
   }
 
   async remove(professorId: string, projectId: string): Promise<void> {
@@ -211,16 +194,7 @@ export class ProjectsService {
       .sort({ createdAt: -1 })
       .exec();
 
-    return projects.map((project) => ({
-      id: project._id.toString(),
-      ...project.toObject(),
-      professor: {
-        id: project.professor._id,
-        name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
-        department: project.professor.department,
-        email: project.professor.email,
-      },
-    }));
+    return projects.map((project) => this.transformToProjectResponse(project));
   }
 
   async addProjectFile(

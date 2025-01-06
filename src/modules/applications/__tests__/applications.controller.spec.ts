@@ -4,7 +4,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { ApplicationsController } from '../applications.controller';
 import { ApplicationsService } from '../applications.service';
-import { ApplicationStatus } from '@common/enums';
+import { ApplicationStatus } from '@common/enums/';
 
 describe('ApplicationsController', () => {
   let controller: ApplicationsController;
