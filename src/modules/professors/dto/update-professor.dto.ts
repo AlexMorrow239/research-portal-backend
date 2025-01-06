@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsString, IsOptional, ValidateNested, MaxLength, IsArray } from 'class-validator';
-
+import { PublicationDto } from './create-professor.dto';
 import { NameDto } from './create-professor.dto';
 
 export class UpdateProfessorDto {
@@ -20,17 +20,26 @@ export class UpdateProfessorDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  researchAreas?: string[];
+  researchAreas: string[];
 
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   office?: string;
 
-  @ApiPropertyOptional()
-  @IsString()
+  @ApiPropertyOptional({
+    type: [PublicationDto],
+    example: [
+      {
+        title: 'Machine Learning in Healthcare',
+        link: 'https://doi.org/10.1234/example',
+      },
+    ],
+  })
   @IsOptional()
-  phoneNumber?: string;
+  @ValidateNested({ each: true })
+  @Type(() => PublicationDto)
+  publications?: PublicationDto[];
 
   @ApiPropertyOptional()
   @IsString()

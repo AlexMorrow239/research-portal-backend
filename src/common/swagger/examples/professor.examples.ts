@@ -14,7 +14,16 @@ export const createProfessorExamples = {
       title: 'Assistant Professor',
       researchAreas: ['Machine Learning', 'Computer Vision'],
       office: 'McArthur Engineering Building, Room 123',
-      phoneNumber: '305-123-4567',
+      publications: [
+        {
+          title: 'Machine Learning in Healthcare: A Comprehensive Review',
+          link: 'https://doi.org/10.1234/example-1',
+        },
+        {
+          title: 'Deep Learning Applications in Computer Vision',
+          link: 'https://doi.org/10.1234/example-2',
+        },
+      ],
       bio: 'Specializing in artificial intelligence and machine learning.',
     },
   },
@@ -29,6 +38,7 @@ export const createProfessorExamples = {
         firstName: 'John',
         lastName: 'Doe',
       },
+      office: 'McArthur Engineering Building, Room 123',
       department: 'Computer Science',
     },
   },
@@ -46,7 +56,6 @@ export const updateProfessorExamples = {
       title: 'Associate Professor',
       researchAreas: ['Machine Learning', 'Computer Vision', 'NLP'],
       office: 'McArthur Engineering Building, Room 456',
-      phoneNumber: '305-123-9876',
       bio: 'Updated research focus on deep learning applications.',
     },
   },

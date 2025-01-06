@@ -9,7 +9,22 @@ import {
   IsOptional,
   MaxLength,
   IsArray,
+  IsUrl,
+  ArrayMinSize,
 } from 'class-validator';
+
+export class PublicationDto {
+  @ApiProperty({ example: 'Machine Learning in Healthcare' })
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @ApiProperty({ example: 'https://doi.org/10.1234/example' })
+  @IsString()
+  @IsUrl()
+  @IsNotEmpty()
+  link: string;
+}
 
 export class NameDto {
   @ApiProperty({ example: 'John' })
@@ -59,21 +74,38 @@ export class CreateProfessorDto {
   @IsOptional()
   title?: string;
 
-  @ApiPropertyOptional({ example: ['AI', 'Machine Learning'] })
+  @ApiPropertyOptional({
+    type: [String],
+    description: 'Research areas of expertise',
+    example: ['Machine Learning', 'Artificial Intelligence'],
+    minItems: 1,
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  researchAreas?: string[];
+  @ArrayMinSize(1, {
+    message: 'At least one research area must be specified, or do not include this field.',
+  })
+  researchAreas: string[];
 
   @ApiPropertyOptional({ example: 'McArthur Engineering Building, Room 123' })
   @IsString()
-  @IsOptional()
-  office?: string;
+  @IsNotEmpty()
+  office: string;
 
-  @ApiPropertyOptional({ example: '+1 (305) 123-4567' })
-  @IsString()
+  @ApiPropertyOptional({
+    type: [PublicationDto],
+    example: [
+      {
+        title: 'Machine Learning in Healthcare',
+        link: 'https://doi.org/10.1234/example',
+      },
+    ],
+  })
   @IsOptional()
-  phoneNumber?: string;
+  @ValidateNested({ each: true })
+  @Type(() => PublicationDto)
+  publications?: PublicationDto[];
 
   @ApiPropertyOptional({
     example: 'Specializing in artificial intelligence and machine learning...',
