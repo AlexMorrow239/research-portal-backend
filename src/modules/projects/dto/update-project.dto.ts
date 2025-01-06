@@ -5,52 +5,38 @@ import { IsString, IsDate, IsNumber, IsArray, IsOptional, Min, IsEnum } from 'cl
 import { ProjectStatus } from '../schemas/projects.schema';
 
 export class UpdateProjectDto {
-  @ApiPropertyOptional({ example: 'AI Research Assistant' })
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   title?: string;
 
-  @ApiPropertyOptional({
-    example: 'Research project focusing on developing AI-powered research tools',
-  })
+  @ApiPropertyOptional()
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiPropertyOptional({ example: ['Python programming', 'Machine Learning basics'] })
+  @ApiPropertyOptional({ type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  researchCategories?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   requirements?: string[];
-
-  @ApiPropertyOptional()
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  startDate?: Date;
-
-  @ApiPropertyOptional()
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  endDate?: Date;
 
   @ApiPropertyOptional({ enum: ProjectStatus })
   @IsEnum(ProjectStatus)
   @IsOptional()
   status?: ProjectStatus;
 
-  @ApiPropertyOptional({ example: 2, description: 'Number of positions available' })
+  @ApiPropertyOptional()
   @IsNumber()
   @Min(1)
   @IsOptional()
   positions?: number;
-
-  @ApiPropertyOptional({ example: ['AI', 'Machine Learning'] })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  tags?: string[];
 
   @ApiPropertyOptional()
   @Type(() => Date)

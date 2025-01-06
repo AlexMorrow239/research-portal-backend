@@ -38,17 +38,11 @@ export class Project extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Professor', required: true })
   professor: Professor;
 
-  @Prop({ required: true })
-  department: string;
+  @Prop({ required: true, type: [String] })
+  researchCategories: string[];
 
   @Prop({ type: [String], required: true })
   requirements: string[];
-
-  @Prop()
-  startDate?: Date;
-
-  @Prop()
-  endDate?: Date;
 
   @Prop({
     type: String,
@@ -61,8 +55,9 @@ export class Project extends Document {
   @Prop({ required: true, min: 1 })
   positions: number;
 
-  @Prop({ type: [String], default: [] })
-  tags?: string[];
+  // FUTURE: Extra layer of filtering for later version.
+  // @Prop({ type: [String], default: [] })
+  // tags?: string[];
 
   @Prop()
   applicationDeadline?: Date;

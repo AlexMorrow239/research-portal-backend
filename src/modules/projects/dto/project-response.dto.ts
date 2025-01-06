@@ -16,25 +16,16 @@ export class ProjectResponseDto {
   @ApiProperty()
   professor: {
     id: string;
-    name: {
-      firstName: string;
-      lastName: string;
-    };
+    name: string;
     department: string;
     email: string;
   };
 
-  @ApiProperty()
-  department: string;
+  @ApiProperty({ type: [String] })
+  researchCategories: string[];
 
-  @ApiProperty()
+  @ApiProperty({ type: [String] })
   requirements: string[];
-
-  @ApiProperty()
-  startDate: Date;
-
-  @ApiProperty()
-  endDate: Date;
 
   @ApiProperty({ enum: ProjectStatus })
   status: ProjectStatus;
@@ -43,10 +34,7 @@ export class ProjectResponseDto {
   positions: number;
 
   @ApiPropertyOptional()
-  tags?: string[];
-
-  @ApiProperty()
-  applicationDeadline: Date;
+  applicationDeadline?: Date;
 
   @ApiProperty()
   isVisible: boolean;
