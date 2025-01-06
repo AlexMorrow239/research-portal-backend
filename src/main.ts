@@ -4,12 +4,12 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { ErrorHandlingInterceptor } from './common/interceptors/error-handling.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log'], // Only show errors and warnings
   });
-  // const app = await NestFactory.create(AppModule)
   // Global Pipes & Filters
   app.useGlobalPipes(
     new ValidationPipe({
@@ -19,6 +19,7 @@ async function bootstrap() {
       },
     }),
   );
+  app.useGlobalInterceptors(new ErrorHandlingInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // CORS
@@ -35,19 +36,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  // Log all registered routes
-  // const server = app.getHttpServer();
-  // const router = server._events.request._router;
-  // console.log('Registered Routes:');
-  // router.stack.forEach(layer => {
-  //   if (layer.route) {
-  //     console.log(`${layer.route.stack[0].method.toUpperCase()} ${layer.route.path}`);
-  //   }
-  // });
-
   await app.listen(process.env.PORT ?? 3000);
 
   Logger.log('Application is starting...');
   Logger.log(`Application running on ${await app.getUrl()}`);
 }
-bootstrap();
