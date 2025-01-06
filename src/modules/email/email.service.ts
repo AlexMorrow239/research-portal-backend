@@ -4,7 +4,7 @@ import * as nodemailer from 'nodemailer';
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
 import { EmailTrackingService } from './email-tracking.service';
-import { Application } from '../applications/schemas/applications.schema';
+import { Application, ApplicationStatus } from '../applications/schemas/applications.schema';
 
 @Injectable()
 export class EmailService {
@@ -25,7 +25,7 @@ export class EmailService {
   async sendApplicationConfirmation(application: Application, projectTitle: string): Promise<void> {
     const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
       projectTitle,
-      `${application.studentInfo.name.firstName} ${application.studentInfo.name.lastName}`,
+      application.studentInfo.name,
     );
 
     await this.sendEmailWithRetry(application.studentInfo.email, subject, text);
@@ -43,14 +43,27 @@ export class EmailService {
 
     const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
       projectTitle,
-      `${application.studentInfo.name.firstName} ${application.studentInfo.name.lastName}`,
-      application.studentInfo.major,
-      application.studentInfo.expectedGraduation.getFullYear().toString(),
-      application.statement,
+      application.studentInfo.name,
+      application.studentInfo.major1,
+      application.studentInfo.graduationDate.getFullYear().toString(),
+      application.researchExperience.researchInterestDescription,
       trackingToken,
     );
 
     await this.sendEmailWithRetry(professorEmail, subject, text);
+  }
+
+  async sendApplicationStatusUpdate(
+    studentEmail: string,
+    projectTitle: string,
+    status: ApplicationStatus,
+  ): Promise<void> {
+    const { subject, text } = this.emailTemplateService.getApplicationStatusUpdateTemplate(
+      projectTitle,
+      status,
+    );
+
+    await this.sendEmailWithRetry(studentEmail, subject, text);
   }
 
   private async sendEmailWithRetry(

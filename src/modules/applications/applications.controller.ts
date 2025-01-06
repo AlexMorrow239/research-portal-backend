@@ -166,13 +166,12 @@ export class ApplicationsController {
   async updateStatus(
     @Param('applicationId') applicationId: string,
     @GetProfessor() professor: Professor,
-    @Body() updateStatusDto: { status: ApplicationStatus; professorNotes?: string },
+    @Body() updateStatusDto: { status: ApplicationStatus },
   ) {
     return await this.applicationsService.updateStatus(
       professor.id,
       applicationId,
       updateStatusDto.status,
-      updateStatusDto.professorNotes,
     );
   }
 

@@ -3,39 +3,119 @@ export const createApplicationExamples = {
     summary: 'Strong Application',
     description: 'Example of a strong student application',
     value: {
-      application: JSON.stringify({
-        studentInfo: {
-          name: {
-            firstName: 'Alice',
-            lastName: 'Johnson',
+      application: JSON.stringify(
+        {
+          studentInfo: {
+            name: {
+              firstName: 'Alice',
+              lastName: 'Johnson',
+            },
+            cNumber: 'C12345678',
+            email: 'alice.johnson@miami.edu',
+            phoneNumber: '305-123-4567',
+            genderIdentity: 'Female',
+            racialEthnicGroups: ['WHITE'],
+            citizenship: 'US_CITIZEN',
+            hasPostSecondaryTranscript: true,
+            academicStanding: 'Junior',
+            graduationDate: '2025-05-15',
+            major1College: 'ARTS_AND_SCIENCES',
+            major1: 'Computer Science',
+            hasAdditionalMajor: false,
+            isPreHealth: false,
+            gpa: 3.95,
           },
-          email: 'alice.johnson@miami.edu',
-          major: 'Computer Science',
-          gpa: 3.95,
-          expectedGraduation: '2025-05-15',
+          researchExperience: {
+            hasPreviousExperience: true,
+            experienceDescription: 'Worked on ML projects in previous internship',
+            researchInterestCategory: 'Artificial Intelligence',
+            researchInterestDescription: 'Deep learning applications in healthcare',
+            educationalCareerGoals: 'Pursuing PhD in Computer Science',
+            courseworkSkills: 'Python, TensorFlow, Statistical Analysis',
+          },
+          cancerResearchInterest: {
+            hasOncologyInterest: true,
+            scccInterest: 'Interested in computational oncology',
+          },
+          availability: {
+            mondayAvailability: '9AM-5PM',
+            tuesdayAvailability: '9AM-5PM',
+            wednesdayAvailability: '9AM-5PM',
+            thursdayAvailability: '9AM-5PM',
+            fridayAvailability: '9AM-5PM',
+            weeklyHours: 'TWELVE_PLUS',
+            desiredProjectLength: 'FOUR_PLUS',
+          },
+          additionalInfo: {
+            hasFederalWorkStudy: true,
+            speaksOtherLanguages: true,
+            additionalLanguages: 'Spanish, Mandarin',
+            comfortableWithAnimals: true,
+            howHeardAboutProgram: 'Faculty Recommendation',
+          },
         },
-        statement:
-          'I am passionate about AI research and have completed relevant coursework in machine learning and neural networks. I have also contributed to open-source ML projects...',
-      }),
+        null,
+        2,
+      ),
     },
   },
   basic: {
     summary: 'Basic Application',
     description: 'Example of a basic student application',
     value: {
-      application: JSON.stringify({
-        studentInfo: {
-          name: {
-            firstName: 'Bob',
-            lastName: 'Smith',
+      application: JSON.stringify(
+        {
+          studentInfo: {
+            name: {
+              firstName: 'Bob',
+              lastName: 'Smith',
+            },
+            cNumber: 'C87654321',
+            email: 'bob.smith@miami.edu',
+            phoneNumber: '305-987-6543',
+            genderIdentity: 'Male',
+            racialEthnicGroups: ['WHITE'],
+            citizenship: 'US_CITIZEN',
+            hasPostSecondaryTranscript: false,
+            academicStanding: 'Sophomore',
+            graduationDate: '2026-05-15',
+            major1College: 'ARTS_AND_SCIENCES',
+            major1: 'Biology',
+            hasAdditionalMajor: false,
+            isPreHealth: true,
+            preHealthTrack: 'Pre-Med',
+            gpa: 3.2,
           },
-          email: 'bob.smith@miami.edu',
-          major: 'Computer Science',
-          gpa: 3.2,
-          expectedGraduation: '2025-12-15',
+          researchExperience: {
+            hasPreviousExperience: false,
+            researchInterestCategory: 'Biology',
+            researchInterestDescription: 'Interest in molecular biology research',
+            educationalCareerGoals: 'Medical School',
+            courseworkSkills: 'Biology, Chemistry, Lab Techniques',
+          },
+          cancerResearchInterest: {
+            hasOncologyInterest: true,
+            scccInterest: 'Interest in cancer biology',
+          },
+          availability: {
+            mondayAvailability: '2PM-5PM',
+            tuesdayAvailability: '2PM-5PM',
+            wednesdayAvailability: '2PM-5PM',
+            thursdayAvailability: '2PM-5PM',
+            fridayAvailability: '2PM-5PM',
+            weeklyHours: 'SIX_TO_EIGHT',
+            desiredProjectLength: 'TWO',
+          },
+          additionalInfo: {
+            hasFederalWorkStudy: false,
+            speaksOtherLanguages: false,
+            comfortableWithAnimals: true,
+            howHeardAboutProgram: 'Department Website',
+          },
         },
-        statement: 'I am interested in gaining research experience in artificial intelligence...',
-      }),
+        null,
+        2,
+      ),
     },
   },
 };
@@ -43,19 +123,14 @@ export const createApplicationExamples = {
 export const updateApplicationStatusExamples = {
   accept: {
     summary: 'Accept Application',
-    description: 'Example of accepting an application with notes',
     value: {
       status: 'ACCEPTED',
-      professorNotes: 'Strong candidate with excellent qualifications and relevant experience.',
     },
   },
   reject: {
     summary: 'Reject Application',
-    description: 'Example of rejecting an application with feedback',
     value: {
       status: 'REJECTED',
-      professorNotes:
-        'Thank you for your interest, but we are looking for candidates with more research experience.',
     },
   },
 };

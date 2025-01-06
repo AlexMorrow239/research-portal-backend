@@ -1,17 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
+import { ApplicationStatus } from '../applications/schemas/applications.schema';
+interface EmailTemplate {
+  subject: string;
+  text: string;
+}
 @Injectable()
 export class EmailTemplateService {
   constructor(private readonly configService: ConfigService) {}
 
   getApplicationConfirmationTemplate(
     projectTitle: string,
-    studentName: string,
+    studentName: { firstName: string; lastName: string }, // Update type
   ): { subject: string; text: string } {
     return {
       subject: 'Research Application Confirmation',
-      text: `Dear ${studentName},
+      text: `Dear ${studentName.firstName} ${studentName.lastName},
 
 Thank you for submitting your application for "${projectTitle}". Your application has been received and will be reviewed by the professor.
 
@@ -27,7 +31,7 @@ Research Portal Team`,
 
   getProfessorNotificationTemplate(
     projectTitle: string,
-    studentName: string,
+    studentName: { firstName: string; lastName: string },
     studentMajor: string,
     studentYear: string,
     statement: string,
@@ -42,7 +46,7 @@ Research Portal Team`,
 
 A new application has been submitted for your research opportunity, "${projectTitle}". Below is a summary of the applicant's attributes:
 
-Name: ${studentName}
+Name: ${studentName.firstName} ${studentName.lastName}
 Major: ${studentMajor}
 Year of Study: ${studentYear}
 Statement of Interest: ${statement}
@@ -52,6 +56,16 @@ ${trackingUrl}
 
 Best regards,
 Research Portal Team`,
+    };
+  }
+
+  getApplicationStatusUpdateTemplate(
+    projectTitle: string,
+    status: ApplicationStatus,
+  ): EmailTemplate {
+    return {
+      subject: `Research Portal - Application Status Update for ${projectTitle}`,
+      text: `Your application for "${projectTitle}" has been ${status.toLowerCase()}.`,
     };
   }
 }

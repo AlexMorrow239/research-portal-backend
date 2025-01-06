@@ -7,9 +7,4 @@ export class UpdateApplicationStatusDto {
   @ApiProperty({ enum: ApplicationStatus })
   @IsEnum(ApplicationStatus)
   status: ApplicationStatus;
-
-  @ApiPropertyOptional({ example: 'Strong candidate, excellent qualifications' })
-  @IsString()
-  @IsOptional()
-  professorNotes?: string;
 }
