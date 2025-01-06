@@ -14,19 +14,17 @@ describe('ProjectsController', () => {
     id: 'test-project-id',
     title: 'Test Project',
     description: 'Test Description',
-    department: 'Computer Science',
     requirements: ['Requirement 1'],
     positions: 2,
     status: ProjectStatus.DRAFT,
     professor: {
       id: 'test-professor-id',
-      name: { firstName: 'Test', lastName: 'Professor' },
+      name: 'Test Professor',
       department: 'Computer Science',
       email: 'testprof@miami.edu',
     },
+    researchCategories: ['Category1', 'Category2'],
     isVisible: false,
-    startDate: new Date(),
-    endDate: new Date(),
     applicationDeadline: new Date(),
     files: [],
     createdAt: new Date(),
@@ -67,6 +65,7 @@ describe('ProjectsController', () => {
         requirements: ['Requirement 1'],
         positions: 2,
         status: ProjectStatus.DRAFT,
+        researchCategories: ['Category1', 'Category2'],
       };
 
       jest.spyOn(projectsService, 'create').mockResolvedValue(mockProject);
