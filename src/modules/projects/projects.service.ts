@@ -23,28 +23,8 @@ export class ProjectsService {
   ): Promise<ProjectResponseDto> {
     const now = new Date();
 
-    // Validate dates if they are provided
-    if (createProjectDto.startDate) {
-      if (createProjectDto.startDate <= now) {
-        throw new BadRequestException('Start date must be in the future');
-      }
-
-      if (createProjectDto.endDate && createProjectDto.endDate <= createProjectDto.startDate) {
-        throw new BadRequestException('End date must be after start date');
-      }
-    }
-
-    if (createProjectDto.applicationDeadline) {
-      if (createProjectDto.applicationDeadline <= now) {
-        throw new BadRequestException('Application deadline must be in the future');
-      }
-
-      if (
-        createProjectDto.startDate &&
-        createProjectDto.applicationDeadline >= createProjectDto.startDate
-      ) {
-        throw new BadRequestException('Application deadline must be before start date');
-      }
+    if (createProjectDto.applicationDeadline && createProjectDto.applicationDeadline <= now) {
+      throw new BadRequestException('Application deadline must be in the future');
     }
 
     try {
@@ -59,7 +39,7 @@ export class ProjectsService {
         ...project.toObject(),
         professor: {
           id: professor.id,
-          name: professor.name,
+          name: `${professor.name.firstName} ${professor.name.lastName}`,
           department: professor.department,
           email: professor.email,
         },
@@ -76,9 +56,8 @@ export class ProjectsService {
     department?: string;
     status?: ProjectStatus;
     search?: string;
-    tags?: string[];
-    researchAreas?: string[];
-    sortBy?: 'createdAt' | 'applicationDeadline' | 'startDate';
+    researchCategories?: string[];
+    sortBy?: 'createdAt' | 'applicationDeadline';
     sortOrder?: 'asc' | 'desc';
   }): Promise<{ projects: ProjectResponseDto[]; total: number }> {
     const {
@@ -87,8 +66,7 @@ export class ProjectsService {
       department,
       status,
       search,
-      tags,
-      researchAreas,
+      researchCategories,
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = query;
@@ -97,35 +75,27 @@ export class ProjectsService {
 
     // Base filters
     if (department) {
-      filter.department = department;
+      filter['professor.department'] = department;
     }
 
     if (status) {
       filter.status = status;
     }
 
-    // Enhanced search with text index
+    // Enhanced search
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } },
       ];
     }
 
-    // Enhanced tag filtering with partial matches
-    if (tags && tags.length > 0) {
-      filter.tags = {
-        $in: tags.map((tag) => new RegExp(tag, 'i')),
-      };
+    // Research categories filtering
+    if (researchCategories && researchCategories.length > 0) {
+      filter.researchCategories = { $in: researchCategories };
     }
 
-    // Research areas filtering
-    if (researchAreas && researchAreas.length > 0) {
-      filter.$or = [...(filter.$or || []), { 'professor.researchAreas': { $in: researchAreas } }];
-    }
-
-    // Visibility filter (always show only visible projects)
+    // Visibility filter
     filter.isVisible = true;
 
     // Dynamic sorting
@@ -136,7 +106,7 @@ export class ProjectsService {
     const [projects, total] = await Promise.all([
       this.projectModel
         .find(filter)
-        .populate('professor', 'name department email researchAreas')
+        .populate('professor', 'name department email')
         .skip((page - 1) * limit)
         .limit(limit)
         .sort(sortOptions)
@@ -145,17 +115,19 @@ export class ProjectsService {
     ]);
 
     return {
-      projects: projects.map((project) => ({
-        id: project._id.toString(),
-        ...project.toObject(),
-        professor: {
-          id: project.professor._id,
-          name: project.professor.name,
-          department: project.professor.department,
-          email: project.professor.email,
-          researchAreas: project.professor.researchAreas,
-        },
-      })),
+      projects: projects.map((project) => {
+        const obj = project.toObject();
+        return {
+          id: project._id.toString(),
+          ...obj,
+          professor: {
+            id: project.professor._id,
+            name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
+            department: project.professor.department,
+            email: project.professor.email,
+          },
+        };
+      }),
       total,
     };
   }
@@ -163,7 +135,7 @@ export class ProjectsService {
   async findOne(id: string): Promise<ProjectResponseDto> {
     const project = await this.projectModel
       .findById(id)
-      .populate('professor', 'name department id email')
+      .populate('professor', 'name department email')
       .exec();
 
     if (!project) {
@@ -174,8 +146,8 @@ export class ProjectsService {
       id: project._id.toString(),
       ...project.toObject(),
       professor: {
-        id: project.professor._id, // Ensure professor ID is included
-        name: project.professor.name,
+        id: project.professor._id,
+        name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
         department: project.professor.department,
         email: project.professor.email,
       },
@@ -189,7 +161,7 @@ export class ProjectsService {
   ): Promise<ProjectResponseDto> {
     const updatedProject = await this.projectModel
       .findOneAndUpdate({ _id: projectId, professor: professorId }, updateProjectDto, { new: true })
-      .populate('professor', 'name department');
+      .populate('professor', 'name department email');
 
     if (!updatedProject) {
       throw new NotFoundException("Project not found or you don't have permission to update it");
@@ -200,7 +172,7 @@ export class ProjectsService {
       ...updatedProject.toObject(),
       professor: {
         id: updatedProject.professor._id,
-        name: updatedProject.professor.name,
+        name: `${updatedProject.professor.name.firstName} ${updatedProject.professor.name.lastName}`,
         department: updatedProject.professor.department,
         email: updatedProject.professor.email,
       },
@@ -208,13 +180,22 @@ export class ProjectsService {
   }
 
   async remove(professorId: string, projectId: string): Promise<void> {
-    const project = await this.projectModel.findOneAndDelete({
-      _id: projectId,
-      professor: professorId,
-    });
+    const project = await this.projectModel
+      .findOneAndDelete({
+        _id: projectId,
+        professor: professorId,
+      })
+      .lean();
 
     if (!project) {
       throw new NotFoundException("Project not found or you don't have permission to delete it");
+    }
+
+    // Delete associated files
+    if (project?.files?.length > 0) {
+      await Promise.all(
+        project.files.map((file) => this.fileStorageService.deleteFile(file.fileName, true)),
+      );
     }
   }
 
@@ -224,7 +205,7 @@ export class ProjectsService {
   ): Promise<ProjectResponseDto[]> {
     const projects = await this.projectModel
       .find({ professor: professorId, ...(status && { status }) })
-      .populate('professor', 'name department')
+      .populate('professor', 'name department email')
       .sort({ createdAt: -1 })
       .exec();
 
@@ -233,7 +214,7 @@ export class ProjectsService {
       ...project.toObject(),
       professor: {
         id: project.professor._id,
-        name: project.professor.name,
+        name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
         department: project.professor.department,
         email: project.professor.email,
       },

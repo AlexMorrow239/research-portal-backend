@@ -59,7 +59,6 @@ describe('ProfessorsService', () => {
       title: 'Associate Professor',
       researchAreas: ['AI', 'Machine Learning'],
       office: 'Room 123',
-      phoneNumber: '305-123-4567',
       bio: 'Test bio',
     };
 
@@ -123,7 +122,6 @@ describe('ProfessorsService', () => {
       title: 'Full Professor',
       researchAreas: ['AI', 'Machine Learning', 'Data Science'],
       office: 'Room 456',
-      phoneNumber: '305-987-6543',
       bio: 'Updated bio',
     };
 

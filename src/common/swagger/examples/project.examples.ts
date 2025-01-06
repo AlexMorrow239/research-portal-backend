@@ -5,13 +5,10 @@ export const createProjectExamples = {
     value: {
       title: 'AI Research Assistant',
       description: 'Research project focusing on AI-powered research tools',
-      department: 'Computer Science',
+      researchCategories: ['Artificial Intelligence', 'Machine Learning'],
       requirements: ['Python programming', 'Machine Learning basics'],
-      startDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: 'DRAFT',
       positions: 2,
-      tags: ['AI', 'ML'],
       applicationDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
@@ -23,13 +20,10 @@ export const createProjectExamples = {
     value: {
       title: 'Machine Learning Research Position',
       description: 'Research position in advanced ML techniques',
-      department: 'Computer Science',
+      researchCategories: ['Machine Learning', 'Deep Learning'],
       requirements: ['Advanced ML knowledge', 'Python expertise', 'Research experience'],
-      startDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 240 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       status: 'PUBLISHED',
       positions: 3,
-      tags: ['Machine Learning', 'Deep Learning', 'Research'],
       applicationDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
@@ -51,17 +45,17 @@ export const updateProjectExamples = {
     value: {
       title: 'Updated: AI Research Assistant',
       description: 'Updated project description with expanded scope',
+      researchCategories: ['Artificial Intelligence', 'Natural Language Processing'],
       requirements: [
         'Strong Python programming skills',
         'Experience with ML frameworks',
         'Background in NLP',
       ],
-      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       positions: 3,
-      tags: ['AI', 'ML', 'NLP'],
       applicationDeadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
         .toISOString()
         .split('T')[0],
+      isVisible: true,
     },
   },
 };

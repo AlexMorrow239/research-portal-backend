@@ -41,7 +41,6 @@ describe('ProfessorsController', () => {
       title: 'Associate Professor',
       researchAreas: ['AI', 'Machine Learning'],
       office: 'Room 123',
-      phoneNumber: '305-123-4567',
       bio: 'Test bio',
     };
 
@@ -54,6 +53,7 @@ describe('ProfessorsController', () => {
         department: professor.department,
         title: 'Associate Professor',
         isActive: true,
+        office: 'Room 123',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -91,7 +91,6 @@ describe('ProfessorsController', () => {
       title: 'Full Professor',
       researchAreas: ['AI', 'Machine Learning', 'Data Science'],
       office: 'Room 456',
-      phoneNumber: '305-987-6543',
       bio: 'Updated bio',
     };
 
@@ -104,6 +103,7 @@ describe('ProfessorsController', () => {
         department: professor.department,
         title: 'Associate Professor',
         isActive: true,
+        office: 'Room 123',
         createdAt: new Date(),
         updatedAt: new Date(),
       };

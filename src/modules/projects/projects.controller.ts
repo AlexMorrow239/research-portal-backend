@@ -91,7 +91,7 @@ export class ProjectsController {
     name: 'department',
     required: false,
     type: String,
-    description: 'Filter by department',
+    description: 'Filter by professor department',
   })
   @ApiQuery({
     name: 'status',
@@ -106,10 +106,10 @@ export class ProjectsController {
     description: 'Search in title and description',
   })
   @ApiQuery({
-    name: 'tags',
+    name: 'researchCategories',
     required: false,
     type: [String],
-    description: 'Filter by tags (comma-separated)',
+    description: 'Filter by research categories (comma-separated)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -133,7 +133,7 @@ export class ProjectsController {
     @Query('department') department?: string,
     @Query('status') status?: ProjectStatus,
     @Query('search') search?: string,
-    @Query('tags') tags?: string[],
+    @Query('researchCategories') researchCategories?: string[],
   ): Promise<{ projects: ProjectResponseDto[]; total: number }> {
     return await this.projectsService.findAll({
       page,
@@ -141,7 +141,11 @@ export class ProjectsController {
       department,
       status,
       search,
-      tags: Array.isArray(tags) ? tags : tags ? [tags] : undefined,
+      researchCategories: Array.isArray(researchCategories)
+        ? researchCategories
+        : researchCategories
+          ? [researchCategories]
+          : undefined,
     });
   }
 

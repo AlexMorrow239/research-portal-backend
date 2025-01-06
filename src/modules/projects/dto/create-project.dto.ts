@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsString,
@@ -11,72 +11,40 @@ import {
   IsEnum,
 } from 'class-validator';
 
-import { IsAfterDate, IsFutureDate } from '../../../common/validators/date.validator';
+import { IsFutureDate } from '../../../common/validators/date.validator';
 import { ProjectStatus } from '../schemas/projects.schema';
 
 export class CreateProjectDto {
-  @ApiProperty({ example: 'AI Research Assistant' })
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   title: string;
 
-  @ApiProperty({ example: 'Research project focusing on developing AI-powered research tools' })
+  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ example: 'Computer Science' })
-  @IsString()
-  @IsNotEmpty()
-  department: string;
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  researchCategories: string[];
 
-  @ApiProperty({ example: ['Python programming', 'Machine Learning basics'] })
+  @ApiProperty({ type: [String] })
   @IsArray()
   @IsString({ each: true })
   requirements: string[];
-
-  @ApiPropertyOptional({
-    example: '2024-06-01',
-    description: 'Project start date (YYYY-MM-DD)',
-    type: String,
-  })
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  @IsFutureDate({ message: 'Start date must be in the future' })
-  startDate?: Date;
-
-  @ApiPropertyOptional({
-    example: '2024-12-31',
-    description: 'Project end date (YYYY-MM-DD)',
-    type: String,
-  })
-  @Type(() => Date)
-  @IsDate()
-  @IsOptional()
-  @IsAfterDate('startDate', { message: 'End date must be after start date' })
-  endDate?: Date;
 
   @ApiProperty({ enum: ProjectStatus, default: ProjectStatus.DRAFT })
   @IsEnum(ProjectStatus)
   status: ProjectStatus;
 
-  @ApiProperty({ example: 2, description: 'Number of positions available' })
+  @ApiProperty()
   @IsNumber()
   @Min(1)
   positions: number;
 
-  @ApiPropertyOptional({ example: ['AI', 'Machine Learning'] })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  tags?: string[];
-
-  @ApiPropertyOptional({
-    example: '2024-05-15',
-    description: 'Application deadline (YYYY-MM-DD)',
-    type: String,
-  })
+  @ApiProperty({ required: false })
   @Type(() => Date)
   @IsDate()
   @IsOptional()

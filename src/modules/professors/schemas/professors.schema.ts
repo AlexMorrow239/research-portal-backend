@@ -1,6 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export class Publication {
+  @Prop({ required: true })
+  title: string;
+
+  @Prop({ required: true })
+  link: string;
+}
 @Schema({ timestamps: true })
 export class Professor extends Document {
   @Prop({
@@ -34,11 +41,11 @@ export class Professor extends Document {
   @Prop([String])
   researchAreas?: string[];
 
-  @Prop()
-  office?: string;
+  @Prop({ required: true })
+  office: string;
 
-  @Prop()
-  phoneNumber?: string;
+  @Prop({ type: [Publication], default: [] })
+  publications?: Publication[];
 
   @Prop({ maxlength: 1000 })
   bio?: string;

@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+class PublicationResponseDto {
+  @ApiProperty()
+  title: string;
 
+  @ApiProperty()
+  link: string;
+}
 class NameResponseDto {
   @ApiProperty()
   firstName: string;
@@ -27,13 +33,13 @@ export class ProfessorResponseDto {
   @ApiPropertyOptional({ type: [String] })
   researchAreas?: string[];
 
-  @ApiPropertyOptional()
-  office?: string;
+  @ApiProperty()
+  office: string;
 
-  @ApiPropertyOptional()
-  phoneNumber?: string;
+  @ApiPropertyOptional({ type: [PublicationResponseDto] })
+  publications?: PublicationResponseDto[];
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ maxLength: 100 })
   bio?: string;
 
   @ApiProperty()
