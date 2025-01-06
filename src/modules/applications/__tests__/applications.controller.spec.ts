@@ -16,15 +16,37 @@ describe('ApplicationsController', () => {
     name: { firstName: 'Prof', lastName: 'Test' },
   };
 
-  const mockApplication = {
-    id: 'app1',
-    project: 'project1',
+  const mockApplicationData = JSON.stringify({
     studentInfo: {
       name: { firstName: 'John', lastName: 'Doe' },
       email: 'john.doe@miami.edu',
+      cNumber: 'C12345678',
+      phoneNumber: '123-456-7890',
+      racialEthnicGroups: ['GROUP1'],
+      citizenship: 'US_CITIZEN',
+      academicStanding: 'JUNIOR',
+      graduationDate: new Date().toISOString(),
+      major1College: 'ARTS_SCIENCES',
+      major1: 'Computer Science',
+      hasAdditionalMajor: false,
+      isPreHealth: false,
+      gpa: 3.5,
     },
-    status: ApplicationStatus.PENDING,
-  };
+    availability: {
+      mondayAvailability: '9AM-5PM',
+      tuesdayAvailability: '9AM-5PM',
+      wednesdayAvailability: '9AM-5PM',
+      thursdayAvailability: '9AM-5PM',
+      fridayAvailability: '9AM-5PM',
+      weeklyHours: 'TWENTY',
+      desiredProjectLength: 'ONE_SEMESTER',
+    },
+    additionalInfo: {
+      hasFederalWorkStudy: false,
+      speaksOtherLanguages: false,
+      comfortableWithAnimals: true,
+    },
+  });
 
   const mockFile = {
     buffer: Buffer.from('test'),
@@ -52,19 +74,12 @@ describe('ApplicationsController', () => {
   });
 
   describe('create', () => {
-    const mockApplicationData = JSON.stringify({
-      studentInfo: {
-        name: { firstName: 'John', lastName: 'Doe' },
-        email: 'john.doe@miami.edu',
-      },
-    });
-
     it('should create application successfully', async () => {
-      jest.spyOn(service, 'create').mockResolvedValue(mockApplication as any);
+      jest.spyOn(service, 'create').mockResolvedValue(mockApplicationData as any);
 
       const result = await controller.create('project1', mockApplicationData, mockFile);
 
-      expect(result).toBe(mockApplication);
+      expect(result).toBe(mockApplicationData);
       expect(service.create).toHaveBeenCalledWith(
         'project1',
         JSON.parse(mockApplicationData),
@@ -81,7 +96,7 @@ describe('ApplicationsController', () => {
 
   describe('findAll', () => {
     it('should return all applications for a project', async () => {
-      const mockApplications = [mockApplication];
+      const mockApplications = [mockApplicationData];
       jest.spyOn(service, 'findProjectApplications').mockResolvedValue(mockApplications as any);
 
       const result = await controller.findAll(
@@ -109,13 +124,13 @@ describe('ApplicationsController', () => {
 
   describe('updateStatus', () => {
     it('should update application status successfully', async () => {
-      jest.spyOn(service, 'updateStatus').mockResolvedValue(mockApplication as any);
+      jest.spyOn(service, 'updateStatus').mockResolvedValue(mockApplicationData as any);
 
       const result = await controller.updateStatus('app1', mockProfessor as any, {
         status: ApplicationStatus.ACCEPTED,
       });
 
-      expect(result).toBe(mockApplication);
+      expect(result).toBe(mockApplicationData);
       expect(service.updateStatus).toHaveBeenCalledWith(
         mockProfessor.id,
         'app1',

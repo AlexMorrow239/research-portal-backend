@@ -25,7 +25,7 @@ export class AvailabilityDto {
 
   @ApiProperty({ enum: WeeklyAvailability })
   @IsEnum(WeeklyAvailability)
-  weeklyHours: WeeklyAvailability;
+  weeklyHours: string;
 
   @ApiProperty({ enum: ProjectLength })
   @IsEnum(ProjectLength)

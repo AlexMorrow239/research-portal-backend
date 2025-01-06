@@ -27,24 +27,42 @@ export class ProjectsService {
     private readonly fileStorageService: FileStorageService,
   ) {}
 
-  private transformToProjectResponse(project: any): ProjectResponseDto {
+  private transformToProjectResponse(project: Project): ProjectResponseDto {
     try {
-      const projectObj = project.toObject ? project.toObject() : project;
+      if (!project) {
+        throw new Error('Project data is undefined');
+      }
+
+      this.logger.debug('Transforming project data:', {
+        projectId: project._id,
+        professorData: project.professor,
+      });
+
       return {
         id: project._id.toString(),
-        ...projectObj,
+        title: project.title,
+        description: project.description,
         professor: {
-          id: project.professor._id,
-          name: `${project.professor.name.firstName} ${project.professor.name.lastName}`,
-          department: project.professor.department,
+          id: project.professor._id.toString(),
+          name: {
+            firstName: project.professor.name.firstName,
+            lastName: project.professor.name.lastName,
+          },
           email: project.professor.email,
+          department: project.professor.department,
         },
+        researchCategories: project.researchCategories,
+        requirements: project.requirements,
+        files: project.files,
+        status: project.status,
+        positions: project.positions,
+        applicationDeadline: project.applicationDeadline,
+        createdAt: project.createdAt,
+        updatedAt: project.updatedAt,
+        isVisible: project.isVisible ?? true,
       };
     } catch (error) {
-      this.logger.error('Error transforming project response', {
-        projectId: project._id,
-        error: error.message,
-      });
+      this.logger.error('Error transforming project response', { error });
       throw new InternalServerErrorException('Error processing project data');
     }
   }
@@ -54,36 +72,22 @@ export class ProjectsService {
     createProjectDto: CreateProjectDto,
   ): Promise<ProjectResponseDto> {
     try {
-      const now = new Date();
-
-      if (createProjectDto.applicationDeadline && createProjectDto.applicationDeadline <= now) {
-        throw new BadRequestException('Application deadline must be in the future');
-      }
+      this.logger.log(`Creating project for professor ${professor._id}`);
 
       const project = await this.projectModel.create({
         ...createProjectDto,
-        professor: professor.id,
-        isVisible: false,
+        professor: professor._id,
       });
 
-      this.logger.log(`Project created successfully by professor ${professor.id}`);
+      // Explicitly populate the professor field after creation
+      const populatedProject = await project.populate('professor', 'name email department');
 
-      return this.transformToProjectResponse({
-        ...project,
-        professor: {
-          _id: professor.id,
-          name: professor.name,
-          department: professor.department,
-          email: professor.email,
-        },
-      });
+      this.logger.log(`Project created successfully by professor ${professor._id}`);
+
+      return this.transformToProjectResponse(populatedProject);
     } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
       this.logger.error('Failed to create project', {
-        professorId: professor.id,
+        professorId: professor._id,
         error: error.message,
         stack: error.stack,
       });
@@ -113,16 +117,27 @@ export class ProjectsService {
         sortOrder = 'desc',
       } = query;
 
-      const filter: any = { isVisible: true };
+      // Build the filter object
+      const filter: any = {};
 
-      if (department) {
-        filter['professor.department'] = department;
-      }
-
+      // Only add status filter if provided, otherwise show all
       if (status) {
         filter.status = status;
       }
 
+      // Handle department filter using aggregation lookup
+      let professorIds = [];
+      if (department) {
+        const professors = await this.projectModel.db
+          .collection('professors')
+          .find({ department })
+          .project({ _id: 1 })
+          .toArray();
+        professorIds = professors.map((prof) => prof._id);
+        filter.professor = { $in: professorIds };
+      }
+
+      // Add search filter if provided
       if (search) {
         filter.$or = [
           { title: { $regex: search, $options: 'i' } },
@@ -130,6 +145,7 @@ export class ProjectsService {
         ];
       }
 
+      // Add research categories filter if provided
       if (researchCategories?.length > 0) {
         filter.researchCategories = { $in: researchCategories };
       }
@@ -137,6 +153,9 @@ export class ProjectsService {
       const sortOptions: any = {
         [sortBy]: sortOrder === 'desc' ? -1 : 1,
       };
+
+      // Add debug logging
+      this.logger.debug('Finding projects with filter:', { filter, sortOptions });
 
       const [projects, total] = await Promise.all([
         this.projectModel
@@ -148,6 +167,9 @@ export class ProjectsService {
           .exec(),
         this.projectModel.countDocuments(filter),
       ]);
+
+      // Add debug logging
+      this.logger.debug(`Found ${projects.length} projects out of ${total} total`);
 
       return {
         projects: projects.map((project) => this.transformToProjectResponse(project)),

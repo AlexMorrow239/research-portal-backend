@@ -15,6 +15,8 @@ import {
   ParseFilePipe,
   UploadedFile,
   UseInterceptors,
+  UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -47,11 +49,13 @@ import { Professor } from '../professors/schemas/professors.schema';
 
 @ApiTags('Projects')
 @Controller('projects')
-@ApiBearerAuth()
 export class ProjectsController {
+  private readonly logger = new Logger(ProjectsController.name);
+
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation(ProjectDescriptions.create)
@@ -70,11 +74,25 @@ export class ProjectsController {
     @GetProfessor() professor: Professor,
     @Body() createProjectDto: CreateProjectDto,
   ): Promise<ProjectResponseDto> {
+    this.logger.debug('Creating project for professor:', {
+      professorId: professor._id,
+      professorEmail: professor.email,
+    });
+
+    if (!professor._id) {
+      this.logger.error('Professor ID is missing');
+      throw new UnauthorizedException('Invalid professor data');
+    }
+
     return await this.projectsService.create(professor, createProjectDto);
   }
 
   @Get()
-  @ApiOperation(ProjectDescriptions.findAll)
+  @ApiOperation({
+    summary: 'List all research projects',
+    description:
+      'Retrieve a paginated list of all visible research projects. No authentication required.',
+  })
   @ApiQuery({
     name: 'page',
     required: false,
@@ -97,7 +115,7 @@ export class ProjectsController {
     name: 'status',
     required: false,
     enum: ProjectStatus,
-    description: 'Filter by project status',
+    description: 'Filter by project status (default: PUBLISHED)',
   })
   @ApiQuery({
     name: 'search',
@@ -131,7 +149,7 @@ export class ProjectsController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('department') department?: string,
-    @Query('status') status?: ProjectStatus,
+    @Query('status') status: ProjectStatus = ProjectStatus.PUBLISHED,
     @Query('search') search?: string,
     @Query('researchCategories') researchCategories?: string[],
   ): Promise<{ projects: ProjectResponseDto[]; total: number }> {
@@ -150,6 +168,7 @@ export class ProjectsController {
   }
 
   @Get('my-projects')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation(ProjectDescriptions.findProfessorProjects)
   @ApiQuery({
@@ -189,6 +208,7 @@ export class ProjectsController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation(ProjectDescriptions.update)
   @ApiParam({
@@ -217,6 +237,7 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation(ProjectDescriptions.remove)
@@ -236,6 +257,7 @@ export class ProjectsController {
   }
 
   @Post(':id/files')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
@@ -283,6 +305,7 @@ export class ProjectsController {
   }
 
   @Delete(':id/files/:fileName')
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation(ProjectDescriptions.deleteFile)

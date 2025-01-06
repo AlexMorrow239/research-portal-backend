@@ -24,7 +24,33 @@ describe('ApplicationsService', () => {
     studentInfo: {
       name: { firstName: 'John', lastName: 'Doe' },
       email: 'john.doe@miami.edu',
+      cNumber: 'C12345678',
+      phoneNumber: '123-456-7890',
+      racialEthnicGroups: ['GROUP1'],
+      citizenship: 'US_CITIZEN',
+      academicStanding: 'JUNIOR',
+      graduationDate: new Date(),
+      major1College: 'ARTS_SCIENCES',
+      major1: 'Computer Science',
+      hasAdditionalMajor: false,
+      isPreHealth: false,
+      gpa: 3.5,
     },
+    availability: {
+      mondayAvailability: '9AM-5PM',
+      tuesdayAvailability: '9AM-5PM',
+      wednesdayAvailability: '9AM-5PM',
+      thursdayAvailability: '9AM-5PM',
+      fridayAvailability: '9AM-5PM',
+      weeklyHours: 'TWENTY',
+      desiredProjectLength: 'ONE_SEMESTER',
+    },
+    additionalInfo: {
+      hasFederalWorkStudy: false,
+      speaksOtherLanguages: false,
+      comfortableWithAnimals: true,
+    },
+    resumeFile: 'resume.pdf',
     status: ApplicationStatus.PENDING,
   };
 
@@ -42,6 +68,8 @@ describe('ApplicationsService', () => {
   const mockFile = {
     buffer: Buffer.from('test'),
     originalname: 'resume.pdf',
+    mimetype: 'application/pdf',
+    size: 1024,
   } as Express.Multer.File;
 
   beforeEach(async () => {
@@ -68,7 +96,11 @@ describe('ApplicationsService', () => {
           provide: FileStorageService,
           useValue: {
             saveFile: jest.fn(),
-            getFile: jest.fn(),
+            getFile: jest.fn().mockResolvedValue({
+              buffer: Buffer.from('test file content'),
+              mimeType: 'application/pdf',
+            }),
+            deleteFile: jest.fn(),
           },
         },
         {
@@ -173,36 +205,67 @@ describe('ApplicationsService', () => {
   });
 
   describe('getResume', () => {
-    it('should return resume file successfully', async () => {
-      const mockFileData = { buffer: Buffer.from('test') };
+    describe('getResume', () => {
+      it('should return resume file successfully', async () => {
+        const mockFileData = {
+          buffer: Buffer.from('test file content'),
+          mimeType: 'application/pdf',
+        };
 
+        // Mock the populated application with proper professor ID structure
+        jest.spyOn(applicationModel, 'findById').mockReturnValue({
+          populate: jest.fn().mockResolvedValue({
+            ...mockApplication,
+            project: {
+              professor: {
+                id: 'prof1',
+                toString: () => 'prof1', // Add toString method to match comparison
+              },
+            },
+            resumeFile: 'resume.pdf',
+          }),
+        } as any);
+
+        jest.spyOn(fileStorageService, 'getFile').mockResolvedValue(mockFileData);
+
+        const result = await service.getResume('prof1', 'app1');
+
+        expect(result).toBeDefined();
+        expect(result.file).toEqual(mockFileData.buffer);
+        expect(result.fileName).toBe('resume.pdf');
+        expect(result.mimeType).toBe('application/pdf');
+      });
+    });
+
+    it('should throw NotFoundException if application not found', async () => {
+      jest.spyOn(applicationModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      } as any);
+
+      await expect(service.getResume('prof1', 'app1')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw NotFoundException if professor is not project owner', async () => {
       jest.spyOn(applicationModel, 'findById').mockReturnValue({
         populate: jest.fn().mockResolvedValue({
           ...mockApplication,
-          project: { professor: 'prof1' },
-          resumeFile: 'resume.pdf',
+          project: { professor: { id: 'different-prof' } },
         }),
       } as any);
 
-      jest.spyOn(fileStorageService, 'getFile').mockResolvedValue(mockFileData as any);
-
-      const result = await service.getResume('prof1', 'app1');
-
-      expect(result.file).toBeDefined();
-      expect(result.fileName).toBe('resume.pdf');
-      expect(result.mimeType).toBe('application/pdf');
+      await expect(service.getResume('prof1', 'app1')).rejects.toThrow(NotFoundException);
     });
 
     it('should throw NotFoundException if resume file not found', async () => {
       jest.spyOn(applicationModel, 'findById').mockReturnValue({
         populate: jest.fn().mockResolvedValue({
           ...mockApplication,
-          project: { professor: 'prof1' },
+          project: { professor: { id: 'prof1' } },
           resumeFile: 'resume.pdf',
         }),
       } as any);
 
-      jest.spyOn(fileStorageService, 'getFile').mockRejectedValue(new Error());
+      jest.spyOn(fileStorageService, 'getFile').mockRejectedValue(new Error('File not found'));
 
       await expect(service.getResume('prof1', 'app1')).rejects.toThrow(NotFoundException);
     });

@@ -1,28 +1,89 @@
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsBoolean,
+  IsDate,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, ValidateNested, ArrayMinSize } from 'class-validator';
-import { RacialEthnicGroup, Citizenship } from '@common/enums/application.enums';
-import { StudentBasicInfoDto } from './student-basic-info.dto';
-import { StudentAcademicInfoDto } from './student-academic-info.dto';
+import { NameDto } from '../base/name.dto';
 
 export class StudentInfoDto {
   @ApiProperty()
   @ValidateNested()
-  @Type(() => StudentBasicInfoDto)
-  basicInfo: StudentBasicInfoDto;
-
-  @ApiProperty({ enum: RacialEthnicGroup, isArray: true })
-  @IsEnum(RacialEthnicGroup, { each: true })
-  @IsArray()
-  @ArrayMinSize(1)
-  racialEthnicGroups: RacialEthnicGroup[];
-
-  @ApiProperty({ enum: Citizenship })
-  @IsEnum(Citizenship)
-  citizenship: Citizenship;
+  @Type(() => NameDto)
+  name: NameDto;
 
   @ApiProperty()
-  @ValidateNested()
-  @Type(() => StudentAcademicInfoDto)
-  academicInfo: StudentAcademicInfoDto;
+  @IsString()
+  cNumber: string;
+
+  @ApiProperty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  phoneNumber: string;
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  racialEthnicGroups: string[];
+
+  @ApiProperty()
+  @IsString()
+  citizenship: string;
+
+  @ApiProperty()
+  @IsString()
+  academicStanding: string;
+
+  @ApiProperty()
+  @Type(() => Date)
+  @IsDate()
+  graduationDate: Date;
+
+  @ApiProperty()
+  @IsString()
+  major1College: string;
+
+  @ApiProperty()
+  @IsString()
+  major1: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  hasAdditionalMajor: boolean;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  major2College?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  major2?: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  isPreHealth: boolean;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  preHealthTrack?: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @Min(0)
+  @Max(4.0)
+  gpa: number;
 }

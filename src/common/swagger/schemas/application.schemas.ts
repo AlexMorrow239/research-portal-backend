@@ -1,3 +1,5 @@
+import { SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+
 export const ApplicationSchemas = {
   Create: {
     schema: {
@@ -171,5 +173,5 @@ export const ApplicationSchemas = {
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
-  },
+  } as SchemaObject,
 };

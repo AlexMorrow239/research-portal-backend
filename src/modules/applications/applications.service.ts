@@ -15,6 +15,7 @@ import { FileStorageService } from '../file-storage/file-storage.service';
 import { ProjectsService } from '../projects/projects.service';
 import { ProjectStatus } from '../projects/schemas/projects.schema';
 import { ApplicationStatus } from '@/common/enums';
+import { application } from 'express';
 
 @Injectable()
 export class ApplicationsService {
@@ -73,7 +74,7 @@ export class ApplicationsService {
 
       this.logger.error('Failed to create application', {
         projectId,
-        studentEmail: createApplicationDto.studentInfo.basicInfo.email,
+        studentEmail: createApplicationDto.studentInfo.email,
         error: error.message,
         stack: error.stack,
       });
@@ -216,7 +217,6 @@ export class ApplicationsService {
           mimeType,
         };
       } catch (fileError) {
-        // If the file storage service fails to find the file, throw NotFoundException
         this.logger.error('Failed to retrieve resume file', {
           applicationId,
           professorId,

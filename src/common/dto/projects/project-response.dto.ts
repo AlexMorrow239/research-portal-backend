@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { ProjectFileDto } from './project-file.dto';
 import { ProjectStatus } from '../../../modules/projects/schemas/projects.schema';
+import { NameDto } from '../base/name.dto';
 
 export class ProjectResponseDto {
   @ApiProperty()
@@ -16,7 +17,7 @@ export class ProjectResponseDto {
   @ApiProperty()
   professor: {
     id: string;
-    name: string;
+    name: NameDto;
     department: string;
     email: string;
   };

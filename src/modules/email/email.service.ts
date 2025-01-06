@@ -47,7 +47,7 @@ export class EmailService {
       application.studentInfo.name,
       application.studentInfo.major1,
       application.studentInfo.graduationDate.getFullYear().toString(),
-      application.researchExperience.researchInterestDescription,
+      application.additionalInfo.researchInterestDescription,
       trackingToken,
     );
 

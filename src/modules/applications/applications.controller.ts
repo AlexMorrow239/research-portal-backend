@@ -30,6 +30,7 @@ import {
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
@@ -41,6 +42,7 @@ import { Professor } from '../professors/schemas/professors.schema';
 import { updateApplicationStatusExamples } from '@/common/swagger';
 import { ApplicationDescriptions } from '@/common/swagger/descriptions/applications.description';
 import { ApplicationStatus } from '@/common/enums';
+import { ApplicationSchemas } from '@/common/swagger/schemas/application.schemas';
 
 @ApiTags('Applications')
 @Controller('projects/:projectId/applications')
@@ -49,6 +51,28 @@ export class ApplicationsController {
 
   @Post()
   @UseInterceptors(FileInterceptor('resume'))
+  @ApiOperation(ApplicationDescriptions.create)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody(ApplicationSchemas.Create)
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Application created successfully',
+    content: {
+      'application/json': {
+        schema: ApplicationSchemas.Response,
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Invalid request (Invalid data format, project not accepting applications, or deadline passed)',
+  })
+  @ApiUnprocessableEntityResponse({
+    description: 'Invalid file (Wrong type or size)',
+  })
+  @ApiNotFoundResponse({
+    description: 'Project not found',
+  })
   async create(
     @Param('projectId') projectId: string,
     @Body('application') applicationData: string,

@@ -5,8 +5,9 @@ export const ProjectDescriptions = {
       'Creates a new research project. All dates must be in the future, and endDate must be after startDate.',
   },
   findAll: {
-    summary: 'List research projects',
-    description: 'Retrieve a paginated list of research projects with optional filters',
+    summary: 'List all research projects',
+    description:
+      'Retrieve a paginated list of all visible research projects. Returns PUBLISHED projects by default. No authentication required.',
   },
   findProfessorProjects: {
     summary: "Get professor's projects",

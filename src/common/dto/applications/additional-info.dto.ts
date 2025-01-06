@@ -1,11 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsString, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class AdditionalInfoDto {
   @ApiProperty()
+  @IsBoolean()
+  hasPrevResearchExperience: boolean;
+
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  previousResearchExperience: string;
+  prevResearchExperience?: string;
+
+  @ApiProperty()
+  @IsString()
+  researchInterestDescription: string;
 
   @ApiProperty()
   @IsBoolean()
@@ -15,16 +23,13 @@ export class AdditionalInfoDto {
   @IsBoolean()
   speaksOtherLanguages: boolean;
 
-  @ApiProperty({ required: false })
-  @IsString()
+  @ApiProperty({ required: false, type: [String] })
+  @IsArray()
+  @IsString({ each: true })
   @IsOptional()
-  additionalLanguages?: string;
+  additionalLanguages?: string[];
 
   @ApiProperty()
   @IsBoolean()
   comfortableWithAnimals: boolean;
-
-  @ApiProperty()
-  @IsString()
-  howHeardAboutProgram: string;
 }

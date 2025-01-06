@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Project } from '../../projects/schemas/projects.schema';
-import { ApplicationStatus } from '@/common/enums';
+import { ApplicationStatus, ProjectLength, WeeklyAvailability } from '@/common/enums';
 
 @Schema()
 export class StudentInfo {
@@ -26,17 +26,11 @@ export class StudentInfo {
   @Prop({ required: true })
   phoneNumber: string;
 
-  @Prop({ required: true })
-  genderIdentity: string;
-
   @Prop({ type: [String], required: true })
   racialEthnicGroups: string[];
 
   @Prop({ required: true })
   citizenship: string;
-
-  @Prop({ required: true })
-  hasPostSecondaryTranscript: boolean;
 
   @Prop({ required: true })
   academicStanding: string;
@@ -70,36 +64,6 @@ export class StudentInfo {
 }
 
 @Schema()
-export class ResearchExperience {
-  @Prop({ required: true })
-  hasPreviousExperience: boolean;
-
-  @Prop()
-  experienceDescription?: string;
-
-  @Prop({ required: true })
-  researchInterestCategory: string;
-
-  @Prop({ required: true })
-  researchInterestDescription: string;
-
-  @Prop({ required: true })
-  educationalCareerGoals: string;
-
-  @Prop({ required: true })
-  courseworkSkills: string;
-}
-
-@Schema()
-export class CancerResearchInterest {
-  @Prop({ required: true })
-  hasOncologyInterest: boolean;
-
-  @Prop()
-  scccInterest?: string;
-}
-
-@Schema()
 export class Availability {
   @Prop({ required: true })
   mondayAvailability: string;
@@ -116,15 +80,24 @@ export class Availability {
   @Prop({ required: true })
   fridayAvailability: string;
 
-  @Prop({ required: true })
-  weeklyHours: string;
+  @Prop({ type: String, enum: WeeklyAvailability, required: true })
+  weeklyHours: WeeklyAvailability;
 
-  @Prop({ required: true })
-  desiredProjectLength: string;
+  @Prop({ type: String, enum: ProjectLength, required: true })
+  desiredProjectLength: ProjectLength;
 }
 
 @Schema()
 export class AdditionalInfo {
+  @Prop({ required: true })
+  hasPrevResearchExperience: boolean;
+
+  @Prop()
+  prevResearchExperience: string;
+
+  @Prop({ required: true })
+  researchInterestDescription: string;
+
   @Prop({ required: true })
   hasFederalWorkStudy: boolean;
 
@@ -132,13 +105,10 @@ export class AdditionalInfo {
   speaksOtherLanguages: boolean;
 
   @Prop()
-  additionalLanguages?: string;
+  additionalLanguages?: string[];
 
   @Prop({ required: true })
   comfortableWithAnimals: boolean;
-
-  @Prop({ required: true })
-  howHeardAboutProgram: string;
 }
 
 @Schema({ timestamps: true })
@@ -148,12 +118,6 @@ export class Application extends Document {
 
   @Prop({ type: StudentInfo, required: true })
   studentInfo: StudentInfo;
-
-  @Prop({ type: ResearchExperience, required: true })
-  researchExperience: ResearchExperience;
-
-  @Prop({ type: CancerResearchInterest, required: true })
-  cancerResearchInterest: CancerResearchInterest;
 
   @Prop({ type: Availability, required: true })
   availability: Availability;
