@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
+import { ErrorHandler } from '@/common/utils/error-handler.util';
 import { ApplicationStatus } from '@common/enums';
 
 import { EmailConfigService } from './config/email.config';
@@ -25,12 +26,19 @@ export class EmailService {
   }
 
   async sendApplicationConfirmation(application: Application, projectTitle: string): Promise<void> {
-    const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
-      projectTitle,
-      application.studentInfo.name,
-    );
+    try {
+      const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
+        projectTitle,
+        application.studentInfo.name,
+      );
 
-    await this.sendEmailWithRetry(application.studentInfo.email, subject, text);
+      await this.sendEmailWithRetry(application.studentInfo.email, subject, text);
+    } catch (error) {
+      ErrorHandler.handleServiceError(this.logger, error, 'send application confirmation', {
+        applicationId: application.id,
+        projectTitle,
+      });
+    }
   }
 
   async sendProfessorNewApplication(
@@ -38,21 +46,30 @@ export class EmailService {
     application: Application,
     projectTitle: string,
   ): Promise<void> {
-    const trackingToken = await this.emailTrackingService.createTrackingToken(
-      application.id,
-      application.project.toString(),
-    );
+    try {
+      const trackingToken = await this.emailTrackingService.createTrackingToken(
+        application.id,
+        application.project.toString(),
+      );
 
-    const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
-      projectTitle,
-      application.studentInfo.name,
-      application.studentInfo.major1,
-      application.studentInfo.graduationDate.getFullYear().toString(),
-      application.additionalInfo.researchInterestDescription,
-      trackingToken,
-    );
+      const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
+        projectTitle,
+        application.studentInfo.name,
+        application.studentInfo.major1,
+        application.studentInfo.graduationDate.getFullYear().toString(),
+        application.additionalInfo.researchInterestDescription,
+        trackingToken,
+      );
 
-    await this.sendEmailWithRetry(professorEmail, subject, text);
+      await this.sendEmailWithRetry(professorEmail, subject, text);
+    } catch (error) {
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'send professor new application notification',
+        { applicationId: application.id, professorEmail, projectTitle },
+      );
+    }
   }
 
   async sendApplicationStatusUpdate(
@@ -60,12 +77,20 @@ export class EmailService {
     projectTitle: string,
     status: ApplicationStatus,
   ): Promise<void> {
-    const { subject, text } = this.emailTemplateService.getApplicationStatusUpdateTemplate(
-      projectTitle,
-      status,
-    );
+    try {
+      const { subject, text } = this.emailTemplateService.getApplicationStatusUpdateTemplate(
+        projectTitle,
+        status,
+      );
 
-    await this.sendEmailWithRetry(studentEmail, subject, text);
+      await this.sendEmailWithRetry(studentEmail, subject, text);
+    } catch (error) {
+      ErrorHandler.handleServiceError(this.logger, error, 'send application status update', {
+        studentEmail,
+        projectTitle,
+        status,
+      });
+    }
   }
 
   private async sendEmailWithRetry(
@@ -91,8 +116,12 @@ export class EmailService {
         await new Promise((resolve) => setTimeout(resolve, this.RETRY_DELAY));
         return this.sendEmailWithRetry(to, subject, text, retryCount + 1);
       }
-      this.logger.error(`Failed to send email to ${to} after ${this.MAX_RETRIES} attempts`);
-      throw error;
+
+      ErrorHandler.handleServiceError(this.logger, error, 'send email', {
+        to,
+        subject,
+        retryCount,
+      });
     }
   }
 }
