@@ -1,7 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { Project } from '../../projects/schemas/projects.schema';
+
 import { ApplicationStatus, ProjectLength, WeeklyAvailability } from '@/common/enums';
+
+import { Project } from '../../projects/schemas/projects.schema';
 
 @Schema()
 export class StudentInfo {

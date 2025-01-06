@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsString, IsOptional, ValidateNested, MaxLength, IsArray } from 'class-validator';
+
 import { PublicationDto } from './create-professor.dto';
 import { NameDto } from '../base/name.dto';
 

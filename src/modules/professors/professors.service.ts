@@ -12,14 +12,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 
-import { CreateProfessorDto } from '../../common/dto/professors/create-professor.dto';
-import { ProfessorResponseDto } from '../../common/dto/professors/professor-response.dto';
-import { ReactivateAccountDto } from '../../common/dto/professors/reactivate-account.dto';
-import { UpdateProfessorDto } from '../../common/dto/professors/update-professor.dto';
 import { InvalidEmailDomainException } from './exceptions/invalid-email-domain.exception';
 import { InvalidPasswordFormatException } from './exceptions/invalid-password-format.exception';
 import { InvalidAdminPasswordException } from './exceptions/password.exception';
 import { Professor } from './schemas/professors.schema';
+import { CreateProfessorDto } from '../../common/dto/professors/create-professor.dto';
+import { ProfessorResponseDto } from '../../common/dto/professors/professor-response.dto';
+import { ReactivateAccountDto } from '../../common/dto/professors/reactivate-account.dto';
+import { UpdateProfessorDto } from '../../common/dto/professors/update-professor.dto';
 
 @Injectable()
 export class ProfessorsService {

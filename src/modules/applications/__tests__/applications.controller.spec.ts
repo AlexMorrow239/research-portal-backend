@@ -1,10 +1,11 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response } from 'express';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+
+import { ApplicationStatus } from '@common/enums/';
 
 import { ApplicationsController } from '../applications.controller';
 import { ApplicationsService } from '../applications.service';
-import { ApplicationStatus } from '@common/enums/';
 
 describe('ApplicationsController', () => {
   let controller: ApplicationsController;

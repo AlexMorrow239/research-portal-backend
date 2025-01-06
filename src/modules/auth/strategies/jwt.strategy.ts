@@ -1,9 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
 import { InjectModel } from '@nestjs/mongoose';
+import { PassportStrategy } from '@nestjs/passport';
 import { Model } from 'mongoose';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+
 import { Professor } from '../../professors/schemas/professors.schema';
 
 @Injectable()

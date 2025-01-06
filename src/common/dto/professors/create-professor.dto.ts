@@ -12,6 +12,7 @@ import {
   IsUrl,
   ArrayMinSize,
 } from 'class-validator';
+
 import { NameDto } from '../base/name.dto';
 
 export class PublicationDto {

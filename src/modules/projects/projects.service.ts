@@ -1,21 +1,21 @@
 import {
   Injectable,
   NotFoundException,
-  BadRequestException,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { Professor } from '@modules/professors/schemas/professors.schema';
-import { Project, ProjectStatus } from './schemas/projects.schema';
 import {
   CreateProjectDto,
   ProjectFileDto,
   ProjectResponseDto,
   UpdateProjectDto,
 } from '@common/dto/projects';
+import { Professor } from '@modules/professors/schemas/professors.schema';
+
+import { Project, ProjectStatus } from './schemas/projects.schema';
 import { FileStorageService } from '../file-storage/file-storage.service';
 
 @Injectable()

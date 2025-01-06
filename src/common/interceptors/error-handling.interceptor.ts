@@ -4,10 +4,10 @@ import {
   ExecutionContext,
   CallHandler,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class ErrorHandlingInterceptor implements NestInterceptor {

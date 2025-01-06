@@ -11,8 +11,8 @@ import {
   IsEnum,
 } from 'class-validator';
 
-import { IsFutureDate } from '../../validators/date.validator';
 import { ProjectStatus } from '../../../modules/projects/schemas/projects.schema';
+import { IsFutureDate } from '../../validators/date.validator';
 
 export class CreateProjectDto {
   @ApiProperty()

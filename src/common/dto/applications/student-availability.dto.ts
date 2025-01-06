@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
+
 import { WeeklyAvailability, ProjectLength } from '@common/enums/application.enums';
 
 export class AvailabilityDto {

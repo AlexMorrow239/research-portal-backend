@@ -8,14 +8,14 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { CreateApplicationDto } from '../../common/dto/applications/create-application.dto';
+import { ApplicationStatus } from '@/common/enums';
+
 import { Application } from './schemas/applications.schema';
+import { CreateApplicationDto } from '../../common/dto/applications/create-application.dto';
 import { EmailService } from '../email/email.service';
 import { FileStorageService } from '../file-storage/file-storage.service';
 import { ProjectsService } from '../projects/projects.service';
 import { ProjectStatus } from '../projects/schemas/projects.schema';
-import { ApplicationStatus } from '@/common/enums';
-import { application } from 'express';
 
 @Injectable()
 export class ApplicationsService {

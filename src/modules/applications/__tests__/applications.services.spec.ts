@@ -1,15 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { getModelToken } from '@nestjs/mongoose';
+import { Test, TestingModule } from '@nestjs/testing';
+import { Model } from 'mongoose';
 
-import { ApplicationsService } from '../applications.service';
-import { Application } from '../schemas/applications.schema';
 import { ApplicationStatus } from '@common/enums';
+
 import { EmailService } from '../../email/email.service';
 import { FileStorageService } from '../../file-storage/file-storage.service';
 import { ProjectsService } from '../../projects/projects.service';
 import { ProjectStatus } from '../../projects/schemas/projects.schema';
+import { ApplicationsService } from '../applications.service';
+import { Application } from '../schemas/applications.schema';
 
 describe('ApplicationsService', () => {
   let service: ApplicationsService;

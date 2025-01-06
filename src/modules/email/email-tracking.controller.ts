@@ -12,9 +12,10 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
+import { GlobalStatsDto, CreateTestTokenDto } from '@/common/dto/email';
+
 import { EmailTrackingService } from './email-tracking.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { GlobalStatsDto, CreateTestTokenDto } from '@/common/dto/email';
 
 @ApiTags('Email Tracking')
 @Controller('api/track')

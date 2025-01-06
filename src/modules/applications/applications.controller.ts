@@ -34,15 +34,15 @@ import {
 } from '@nestjs/swagger';
 import { Response } from 'express';
 
+import { ApplicationStatus } from '@/common/enums';
+import { updateApplicationStatusExamples } from '@/common/swagger';
+import { ApplicationDescriptions } from '@/common/swagger/descriptions/applications.description';
+import { ApplicationSchemas } from '@/common/swagger/schemas/application.schemas';
+
 import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from '../professors/decorators/get-professor.decorator';
 import { Professor } from '../professors/schemas/professors.schema';
-
-import { updateApplicationStatusExamples } from '@/common/swagger';
-import { ApplicationDescriptions } from '@/common/swagger/descriptions/applications.description';
-import { ApplicationStatus } from '@/common/enums';
-import { ApplicationSchemas } from '@/common/swagger/schemas/application.schemas';
 
 @ApiTags('Applications')
 @Controller('projects/:projectId/applications')
