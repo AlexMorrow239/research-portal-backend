@@ -30,7 +30,7 @@ export class ApplicationsService {
         throw new BadRequestException('Project is not accepting applications');
       }
 
-      if (new Date() > new Date(project.applicationDeadline)) {
+      if (project.applicationDeadline && new Date() > new Date(project.applicationDeadline)) {
         throw new BadRequestException('Application deadline has passed');
       }
 
@@ -39,7 +39,10 @@ export class ApplicationsService {
       const application = await this.applicationModel.create({
         project: projectId,
         studentInfo: createApplicationDto.studentInfo,
-        statement: createApplicationDto.statement,
+        researchExperience: createApplicationDto.researchExperience,
+        cancerResearchInterest: createApplicationDto.cancerResearchInterest,
+        availability: createApplicationDto.availability,
+        additionalInfo: createApplicationDto.additionalInfo,
         resumeFile: fileName,
         status: ApplicationStatus.PENDING,
       });
@@ -68,7 +71,6 @@ export class ApplicationsService {
     professorId: string,
     applicationId: string,
     status: ApplicationStatus,
-    notes?: string,
   ): Promise<Application> {
     const application = await this.applicationModel.findById(applicationId).populate({
       path: 'project',
@@ -82,7 +84,6 @@ export class ApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    // Check if project and professor are properly populated
     if (!application.project || !application.project.professor) {
       console.error('Project or professor not properly populated:', {
         hasProject: !!application.project,
@@ -97,10 +98,15 @@ export class ApplicationsService {
       throw new NotFoundException('Application not found');
     }
 
-    const updatedApplication = await this.applicationModel.findByIdAndUpdate(
-      applicationId,
-      { status, professorNotes: notes },
-      { new: true },
+    const updatedApplication = await this.applicationModel
+      .findByIdAndUpdate(applicationId, { status }, { new: true })
+      .populate('project');
+
+    // Send status update email to student
+    await this.emailService.sendApplicationStatusUpdate(
+      application.studentInfo.email,
+      application.project.title,
+      status,
     );
 
     return updatedApplication;
@@ -113,7 +119,7 @@ export class ApplicationsService {
   ): Promise<Application[]> {
     const project = await this.projectsService.findOne(projectId);
 
-    if (project.professor.id.toString() !== professorId.toString()) {
+    if (project.professor.id.toString() !== professorId) {
       throw new NotFoundException('Project not found');
     }
 
@@ -122,7 +128,7 @@ export class ApplicationsService {
       filter.status = status;
     }
 
-    return this.applicationModel.find(filter).sort({ createdAt: -1 });
+    return this.applicationModel.find(filter).populate('project').sort({ createdAt: -1 });
   }
 
   async getResume(
@@ -148,14 +154,29 @@ export class ApplicationsService {
 
     try {
       const fileData = await this.fileStorageService.getFile(application.resumeFile);
+      const mimeType = this.getMimeType(application.resumeFile);
 
       return {
         file: fileData.buffer,
         fileName: application.resumeFile,
-        mimeType: 'application/pdf', // Assuming PDF format for resumes
+        mimeType,
       };
     } catch (error) {
       throw new NotFoundException('Resume file not found');
+    }
+  }
+
+  private getMimeType(fileName: string): string {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return 'application/pdf';
+      case 'doc':
+        return 'application/msword';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      default:
+        return 'application/octet-stream';
     }
   }
 }
