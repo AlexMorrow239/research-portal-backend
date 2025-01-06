@@ -15,6 +15,7 @@ import {
   HttpCode,
   HttpStatus,
   Res,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -49,47 +50,6 @@ export class ApplicationsController {
 
   @Post()
   @UseInterceptors(FileInterceptor('resume'))
-  @ApiOperation(ApplicationDescriptions.create)
-  @ApiConsumes('multipart/form-data')
-  @ApiBody(ApplicationSchemas.Create)
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Application submitted successfully',
-    ...ApplicationSchemas.Response,
-  })
-  @ApiBadRequestResponse({
-    description: 'Invalid application data or file',
-    schema: {
-      type: 'object',
-      properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: {
-          type: 'array',
-          items: { type: 'string' },
-          example: [
-            'firstName is required',
-            'Email must be from @miami.edu domain',
-            'GPA must be between 0 and 4.0',
-            'expectedGraduation must be in YYYY-MM-DD format',
-            'Resume file must be PDF, DOC, or DOCX format',
-            'File size exceeds 5MB limit',
-          ],
-        },
-        error: { type: 'string', example: 'Bad Request' },
-      },
-    },
-  })
-  @ApiNotFoundResponse({
-    description: 'Project not found',
-    schema: {
-      type: 'object',
-      properties: {
-        statusCode: { type: 'number', example: 404 },
-        message: { type: 'string', example: 'Project not found' },
-        error: { type: 'string', example: 'Not Found' },
-      },
-    },
-  })
   async create(
     @Param('projectId') projectId: string,
     @Body('application') applicationData: string,
@@ -104,7 +64,15 @@ export class ApplicationsController {
     )
     resume: Express.Multer.File,
   ) {
-    return await this.applicationsService.create(projectId, JSON.parse(applicationData), resume);
+    try {
+      const parsedData = JSON.parse(applicationData);
+      return await this.applicationsService.create(projectId, parsedData, resume);
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new BadRequestException('Invalid application data format');
+      }
+      throw error;
+    }
   }
 
   @Get()
