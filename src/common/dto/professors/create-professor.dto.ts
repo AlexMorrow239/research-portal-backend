@@ -12,6 +12,7 @@ import {
   IsUrl,
   ArrayMinSize,
 } from 'class-validator';
+import { NameDto } from '../base/name.dto';
 
 export class PublicationDto {
   @ApiProperty({ example: 'Machine Learning in Healthcare' })
@@ -24,18 +25,6 @@ export class PublicationDto {
   @IsUrl()
   @IsNotEmpty()
   link: string;
-}
-
-export class NameDto {
-  @ApiProperty({ example: 'John' })
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @ApiProperty({ example: 'Doe' })
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
 }
 
 export class CreateProfessorDto {

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { CreateApplicationDto } from './dto/create-application.dto';
+import { CreateApplicationDto } from '../../common/dto/applications/create-application.dto';
 import { Application, ApplicationStatus } from './schemas/applications.schema';
 import { EmailService } from '../email/email.service';
 import { FileStorageService } from '../file-storage/file-storage.service';
@@ -39,8 +39,6 @@ export class ApplicationsService {
       const application = await this.applicationModel.create({
         project: projectId,
         studentInfo: createApplicationDto.studentInfo,
-        researchExperience: createApplicationDto.researchExperience,
-        cancerResearchInterest: createApplicationDto.cancerResearchInterest,
         availability: createApplicationDto.availability,
         additionalInfo: createApplicationDto.additionalInfo,
         resumeFile: fileName,

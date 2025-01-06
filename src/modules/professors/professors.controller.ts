@@ -28,11 +28,11 @@ import {
 } from '@/common/swagger/examples/professor.examples';
 
 import { GetProfessor } from './decorators/get-professor.decorator';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { CreateProfessorDto } from './dto/create-professor.dto';
-import { ProfessorResponseDto } from './dto/professor-response.dto';
-import { ReactivateAccountDto } from './dto/reactivate-account.dto';
-import { UpdateProfessorDto } from './dto/update-professor.dto';
+import { ChangePasswordDto } from '../../common/dto/professors/change-password.dto';
+import { CreateProfessorDto } from '../../common/dto/professors/create-professor.dto';
+import { ProfessorResponseDto } from '../../common/dto/professors/professor-response.dto';
+import { ReactivateAccountDto } from '../../common/dto/professors/reactivate-account.dto';
+import { UpdateProfessorDto } from '../../common/dto/professors/update-professor.dto';
 import { ProfessorsService } from './professors.service';
 import { Professor } from './schemas/professors.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

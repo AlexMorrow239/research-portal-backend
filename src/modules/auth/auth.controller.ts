@@ -12,7 +12,7 @@ import { AuthDescriptions } from '@/common/swagger/descriptions/auth.description
 import { AuthSchemas } from '@/common/swagger/schemas/auth.schemas';
 
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto } from '../../common/dto/auth/login.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')

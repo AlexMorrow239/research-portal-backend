@@ -2,13 +2,15 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { FileStorageService } from './../file-storage/file-storage.service';
-import { Professor } from './../professors/schemas/professors.schema';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { ProjectFileDto } from './dto/project-file.dto';
-import { ProjectResponseDto } from './dto/project-response.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { Professor } from '@modules/professors/schemas/professors.schema';
 import { Project, ProjectStatus } from './schemas/projects.schema';
+import {
+  CreateProjectDto,
+  ProjectFileDto,
+  ProjectResponseDto,
+  UpdateProjectDto,
+} from '@common/dto/projects';
+import { FileStorageService } from '../file-storage/file-storage.service';
 
 @Injectable()
 export class ProjectsService {

@@ -1,6 +1,6 @@
 import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
 
-import { CreateProfessorDto } from '../dto/create-professor.dto';
+import { CreateProfessorDto } from '../../../common/dto/professors/create-professor.dto';
 
 @Injectable()
 export class EmailDomainPipe implements PipeTransform {

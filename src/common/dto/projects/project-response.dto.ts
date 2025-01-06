@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { ProjectFileDto } from './project-file.dto';
-import { ProjectStatus } from '../schemas/projects.schema';
+import { ProjectStatus } from '../../../modules/projects/schemas/projects.schema';
 
 export class ProjectResponseDto {
   @ApiProperty()

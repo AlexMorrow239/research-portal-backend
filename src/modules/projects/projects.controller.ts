@@ -35,10 +35,10 @@ import {
 import { createProjectExamples, updateProjectExamples } from '@/common/swagger';
 import { ProjectDescriptions } from '@/common/swagger/descriptions/projects.description';
 
-import { CreateProjectDto } from './dto/create-project.dto';
-import { ProjectFileDto } from './dto/project-file.dto';
-import { ProjectResponseDto } from './dto/project-response.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
+import { CreateProjectDto } from '../../common/dto/projects/create-project.dto';
+import { ProjectFileDto } from '../../common/dto/projects/project-file.dto';
+import { ProjectResponseDto } from '../../common/dto/projects/project-response.dto';
+import { UpdateProjectDto } from '../../common/dto/projects/update-project.dto';
 import { ProjectsService } from './projects.service';
 import { ProjectStatus } from './schemas/projects.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

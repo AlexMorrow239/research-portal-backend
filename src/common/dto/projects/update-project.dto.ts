@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsString, IsDate, IsNumber, IsArray, IsOptional, Min, IsEnum } from 'class-validator';
 
-import { ProjectStatus } from '../schemas/projects.schema';
+import { ProjectStatus } from '../../../modules/projects/schemas/projects.schema';
 
 export class UpdateProjectDto {
   @ApiPropertyOptional()
