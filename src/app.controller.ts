@@ -13,4 +13,9 @@ export class AppController {
   getRoot(): string {
     return this.appService.getRoot();
   }
+
+  @Get('favicon.ico')
+  ignoreFaviconRequest() {
+    return '';
+  }
 }
