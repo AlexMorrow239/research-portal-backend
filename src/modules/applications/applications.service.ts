@@ -1,14 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ApplicationStatus } from '@/common/enums';
+import { ErrorHandler } from '@/common/utils/error-handler.util';
 
 import { Application } from './schemas/applications.schema';
 import { CreateApplicationDto } from '../../common/dto/applications/create-application.dto';
@@ -45,7 +40,6 @@ export class ApplicationsService {
       }
 
       const fileName = await this.fileStorageService.saveFile(resumeFile, `resumes`);
-
       const application = await this.applicationModel.create({
         project: projectId,
         studentInfo: createApplicationDto.studentInfo,
@@ -55,10 +49,7 @@ export class ApplicationsService {
         status: ApplicationStatus.PENDING,
       });
 
-      // Send confirmation email to student
       await this.emailService.sendApplicationConfirmation(application, project.title);
-
-      // Send notification email to professor
       await this.emailService.sendProfessorNewApplication(
         project.professor.email,
         application,
@@ -68,17 +59,18 @@ export class ApplicationsService {
       this.logger.log(`Application created successfully for project ${projectId}`);
       return application;
     } catch (error) {
-      if (error instanceof BadRequestException || error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to create application', {
-        projectId,
-        studentEmail: createApplicationDto.studentInfo.email,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to create application');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'create application',
+        {
+          projectId,
+          ...(createApplicationDto?.studentInfo?.email && {
+            studentEmail: createApplicationDto.studentInfo.email,
+          }),
+        },
+        [BadRequestException, NotFoundException],
+      );
     }
   }
 
@@ -101,17 +93,10 @@ export class ApplicationsService {
       }
 
       if (!application.project || !application.project.professor) {
-        this.logger.error('Project or professor not properly populated:', {
-          applicationId,
-          hasProject: !!application.project,
-          hasProfessor: !!application.project?.professor,
-        });
         throw new NotFoundException('Application project details not found');
       }
 
-      const projectProfessorId = application.project.professor.id?.toString();
-
-      if (projectProfessorId !== professorId) {
+      if (application.project.professor.id?.toString() !== professorId) {
         throw new NotFoundException('Application not found');
       }
 
@@ -119,7 +104,6 @@ export class ApplicationsService {
         .findByIdAndUpdate(applicationId, { status }, { new: true })
         .populate('project');
 
-      // Send status update email to student
       await this.emailService.sendApplicationStatusUpdate(
         application.studentInfo.email,
         application.project.title,
@@ -129,18 +113,13 @@ export class ApplicationsService {
       this.logger.log(`Application ${applicationId} status updated to ${status}`);
       return updatedApplication;
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to update application status', {
-        applicationId,
-        professorId,
-        status,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to update application status');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'update application status',
+        { applicationId, professorId, status },
+        [NotFoundException],
+      );
     }
   }
 
@@ -169,29 +148,20 @@ export class ApplicationsService {
       this.logger.log(`Retrieved ${applications.length} applications for project ${projectId}`);
       return applications;
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to fetch project applications', {
-        projectId,
-        professorId,
-        status,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to fetch applications');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'fetch project applications',
+        { projectId, professorId, status },
+        [NotFoundException],
+      );
     }
   }
 
   async getResume(
     professorId: string,
     applicationId: string,
-  ): Promise<{
-    file: Buffer;
-    fileName: string;
-    mimeType: string;
-  }> {
+  ): Promise<{ file: Buffer; fileName: string; mimeType: string }> {
     try {
       const application = await this.applicationModel.findById(applicationId).populate({
         path: 'project',
@@ -206,37 +176,23 @@ export class ApplicationsService {
         throw new NotFoundException('Application not found');
       }
 
-      try {
-        const fileData = await this.fileStorageService.getFile(application.resumeFile);
-        const mimeType = this.getMimeType(application.resumeFile);
+      const fileData = await this.fileStorageService.getFile(application.resumeFile);
+      const mimeType = this.getMimeType(application.resumeFile);
 
-        this.logger.log(`Resume retrieved for application ${applicationId}`);
-        return {
-          file: fileData.buffer,
-          fileName: application.resumeFile,
-          mimeType,
-        };
-      } catch (fileError) {
-        this.logger.error('Failed to retrieve resume file', {
-          applicationId,
-          professorId,
-          fileName: application.resumeFile,
-          error: fileError.message,
-        });
-        throw new NotFoundException('Resume file not found');
-      }
+      this.logger.log(`Resume retrieved for application ${applicationId}`);
+      return {
+        file: fileData.buffer,
+        fileName: application.resumeFile,
+        mimeType,
+      };
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to retrieve resume', {
-        applicationId,
-        professorId,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to retrieve resume');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'retrieve resume',
+        { applicationId, professorId },
+        [NotFoundException],
+      );
     }
   }
 

@@ -1,12 +1,8 @@
-import {
-  Injectable,
-  NotFoundException,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
+import { ErrorHandler } from '@/common/utils/error-handler.util';
 import {
   CreateProjectDto,
   ProjectFileDto,
@@ -62,8 +58,9 @@ export class ProjectsService {
         isVisible: project.isVisible ?? true,
       };
     } catch (error) {
-      this.logger.error('Error transforming project response', { error });
-      throw new InternalServerErrorException('Error processing project data');
+      ErrorHandler.handleServiceError(this.logger, error, 'transform project response', {
+        projectId: project?._id,
+      });
     }
   }
 
@@ -79,19 +76,15 @@ export class ProjectsService {
         professor: professor._id,
       });
 
-      // Explicitly populate the professor field after creation
       const populatedProject = await project.populate('professor', 'name email department');
 
       this.logger.log(`Project created successfully by professor ${professor._id}`);
 
       return this.transformToProjectResponse(populatedProject);
     } catch (error) {
-      this.logger.error('Failed to create project', {
+      ErrorHandler.handleServiceError(this.logger, error, 'create project', {
         professorId: professor._id,
-        error: error.message,
-        stack: error.stack,
       });
-      throw new InternalServerErrorException('Failed to create project');
     }
   }
 
@@ -117,27 +110,21 @@ export class ProjectsService {
         sortOrder = 'desc',
       } = query;
 
-      // Build the filter object
       const filter: any = {};
 
-      // Only add status filter if provided, otherwise show all
       if (status) {
         filter.status = status;
       }
 
-      // Handle department filter using aggregation lookup
-      let professorIds = [];
       if (department) {
         const professors = await this.projectModel.db
           .collection('professors')
           .find({ department })
           .project({ _id: 1 })
           .toArray();
-        professorIds = professors.map((prof) => prof._id);
-        filter.professor = { $in: professorIds };
+        filter.professor = { $in: professors.map((prof) => prof._id) };
       }
 
-      // Add search filter if provided
       if (search) {
         filter.$or = [
           { title: { $regex: search, $options: 'i' } },
@@ -145,16 +132,14 @@ export class ProjectsService {
         ];
       }
 
-      // Add research categories filter if provided
       if (researchCategories?.length > 0) {
         filter.researchCategories = { $in: researchCategories };
       }
 
-      const sortOptions: any = {
+      const sortOptions: { [key: string]: mongoose.SortOrder } = {
         [sortBy]: sortOrder === 'desc' ? -1 : 1,
       };
 
-      // Add debug logging
       this.logger.debug('Finding projects with filter:', { filter, sortOptions });
 
       const [projects, total] = await Promise.all([
@@ -168,7 +153,6 @@ export class ProjectsService {
         this.projectModel.countDocuments(filter),
       ]);
 
-      // Add debug logging
       this.logger.debug(`Found ${projects.length} projects out of ${total} total`);
 
       return {
@@ -176,12 +160,7 @@ export class ProjectsService {
         total,
       };
     } catch (error) {
-      this.logger.error('Failed to fetch projects', {
-        query,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to fetch projects');
+      ErrorHandler.handleServiceError(this.logger, error, 'fetch projects', { query });
     }
   }
 
@@ -198,16 +177,9 @@ export class ProjectsService {
 
       return this.transformToProjectResponse(project);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to fetch project', {
-        projectId: id,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to fetch project');
+      ErrorHandler.handleServiceError(this.logger, error, 'fetch project', { projectId: id }, [
+        NotFoundException,
+      ]);
     }
   }
 
@@ -230,17 +202,13 @@ export class ProjectsService {
       this.logger.log(`Project ${projectId} updated by professor ${professorId}`);
       return this.transformToProjectResponse(updatedProject);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to update project', {
-        projectId,
-        professorId,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to update project');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'update project',
+        { projectId, professorId },
+        [NotFoundException],
+      );
     }
   }
 
@@ -265,17 +233,13 @@ export class ProjectsService {
 
       this.logger.log(`Project ${projectId} deleted by professor ${professorId}`);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to delete project', {
-        projectId,
-        professorId,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to delete project');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'delete project',
+        { projectId, professorId },
+        [NotFoundException],
+      );
     }
   }
 
@@ -292,13 +256,10 @@ export class ProjectsService {
 
       return projects.map((project) => this.transformToProjectResponse(project));
     } catch (error) {
-      this.logger.error('Failed to fetch professor projects', {
+      ErrorHandler.handleServiceError(this.logger, error, 'fetch professor projects', {
         professorId,
         status,
-        error: error.message,
-        stack: error.stack,
       });
-      throw new InternalServerErrorException('Failed to fetch professor projects');
     }
   }
 
@@ -334,18 +295,13 @@ export class ProjectsService {
       this.logger.log(`File added to project ${projectId} by professor ${professorId}`);
       return projectFile;
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to add project file', {
-        projectId,
-        professorId,
-        fileName: file.originalname,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to add project file');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'add project file',
+        { projectId, professorId, fileName: file.originalname },
+        [NotFoundException],
+      );
     }
   }
 
@@ -371,18 +327,13 @@ export class ProjectsService {
         `File ${fileName} removed from project ${projectId} by professor ${professorId}`,
       );
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      this.logger.error('Failed to remove project file', {
-        projectId,
-        professorId,
-        fileName,
-        error: error.message,
-        stack: error.stack,
-      });
-      throw new InternalServerErrorException('Failed to remove project file');
+      ErrorHandler.handleServiceError(
+        this.logger,
+        error,
+        'remove project file',
+        { projectId, professorId, fileName },
+        [NotFoundException],
+      );
     }
   }
 }
