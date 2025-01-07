@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 
 import { ApplicationStatus } from '@/common/enums';
 import { ErrorHandler } from '@/common/utils/error-handler.util';
+import { AnalyticsService } from '@/modules/analytics/analytics.service';
 
 import { Application } from './schemas/applications.schema';
 import { CreateApplicationDto } from '../../common/dto/applications/create-application.dto';
@@ -21,6 +22,7 @@ export class ApplicationsService {
     private readonly projectsService: ProjectsService,
     private readonly fileStorageService: FileStorageService,
     private readonly emailService: EmailService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async create(
@@ -48,6 +50,13 @@ export class ApplicationsService {
         resumeFile: fileName,
         status: ApplicationStatus.PENDING,
       });
+
+      // Update analytics for new application
+      await this.analyticsService.updateApplicationMetrics(
+        projectId,
+        null, // No old status for new applications
+        ApplicationStatus.PENDING,
+      );
 
       await this.emailService.sendApplicationConfirmation(application, project.title);
       await this.emailService.sendProfessorNewApplication(
@@ -92,17 +101,17 @@ export class ApplicationsService {
         throw new NotFoundException('Application not found');
       }
 
-      if (!application.project || !application.project.professor) {
-        throw new NotFoundException('Application project details not found');
-      }
-
-      if (application.project.professor.id?.toString() !== professorId) {
-        throw new NotFoundException('Application not found');
-      }
-
+      const oldStatus = application.status;
       const updatedApplication = await this.applicationModel
         .findByIdAndUpdate(applicationId, { status }, { new: true })
         .populate('project');
+
+      // Update analytics for status change
+      await this.analyticsService.updateApplicationMetrics(
+        application.project.id,
+        oldStatus,
+        status,
+      );
 
       await this.emailService.sendApplicationStatusUpdate(
         application.studentInfo.email,

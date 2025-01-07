@@ -6,6 +6,8 @@ import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 
+import { AnalyticsModule } from '@/modules/analytics/analytics.module';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApplicationsModule } from './modules/applications/applications.module';
@@ -45,6 +47,7 @@ import { ProjectsModule } from './modules/projects/projects.module'; // Add this
     ProfessorsModule,
     ProjectsModule,
     ApplicationsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

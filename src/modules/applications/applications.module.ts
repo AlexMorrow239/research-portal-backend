@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AnalyticsModule } from '@/modules/analytics/analytics.module';
+
 import { ApplicationsController } from './applications.controller';
 import { ApplicationsService } from './applications.service';
 import { Application, ApplicationSchema } from './schemas/applications.schema';
@@ -14,6 +16,7 @@ import { ProjectsModule } from '../projects/projects.module';
     ProjectsModule,
     FileStorageModule,
     EmailModule,
+    AnalyticsModule,
   ],
   providers: [ApplicationsService],
   controllers: [ApplicationsController],

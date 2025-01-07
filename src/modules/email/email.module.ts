@@ -16,6 +16,6 @@ import { EmailTracking, EmailTrackingSchema } from './schemas/email-tracking.sch
   ],
   controllers: [EmailTrackingController],
   providers: [EmailService, EmailConfigService, EmailTemplateService, EmailTrackingService, Logger],
-  exports: [EmailService],
+  exports: [EmailService, EmailTrackingService],
 })
 export class EmailModule {}

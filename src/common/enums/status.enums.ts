@@ -1,8 +1,11 @@
 export enum ApplicationStatus {
   PENDING = 'PENDING',
+  INTERVIEW = 'INTERVIEW',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
   WITHDRAWN = 'WITHDRAWN',
+  OFFER_ACCEPTED = 'OFFER_ACCEPTED',
+  OFFER_DECLINED = 'OFFER_DECLINED',
 }
 
 export enum ProjectStatus {
