@@ -1,7 +1,7 @@
 // Helper function to generate dates
-const getFutureDate = () => {
+const getFutureDate = (months: number) => {
   const date = new Date();
-  date.setMonth(date.getMonth() + 6); // 6 months in the future
+  date.setMonth(date.getMonth() + months); // 6 months in the future
   return date.toISOString();
 };
 
@@ -35,7 +35,7 @@ export const createProjectExamples = {
       ],
       status: 'PUBLISHED',
       positions: 2,
-      applicationDeadline: getFutureDate(),
+      applicationDeadline: getFutureDate(6),
       isVisible: true,
     },
   },
@@ -65,7 +65,7 @@ export const createProjectExamples = {
       ],
       status: 'DRAFT',
       positions: 2,
-      applicationDeadline: getFutureDate(),
+      applicationDeadline: getFutureDate(6),
       isVisible: false,
     },
   },
@@ -90,15 +90,7 @@ export const updateProjectExamples = {
     description: 'Example of updating all available fields',
     value: {
       title: 'Updated: ML Research Position',
-      description: `
-        Updated project description with expanded scope and new requirements.
-        Now including natural language processing components and cloud computing aspects.
-        
-        Additional responsibilities:
-        - NLP model development
-        - Cloud infrastructure setup
-        - Performance optimization
-      `,
+      description: `Updated project description with expanded scope and new requirements. Now including natural language processing components and cloud computing aspects.`,
       researchCategories: [
         'Machine Learning',
         'Deep Learning',
@@ -113,7 +105,7 @@ export const updateProjectExamples = {
       ],
       status: 'PUBLISHED',
       positions: 3,
-      applicationDeadline: '2024-12-31T23:59:59.999Z',
+      applicationDeadline: getFutureDate(4),
       isVisible: true,
     },
   },
@@ -136,7 +128,7 @@ export const updateProjectExamples = {
     summary: 'Deadline Update',
     description: 'Example of updating application deadline',
     value: {
-      applicationDeadline: '2025-06-30T23:59:59.999Z',
+      applicationDeadline: getFutureDate(4),
     },
   },
   requirementsUpdate: {
@@ -148,85 +140,6 @@ export const updateProjectExamples = {
         'New skill prerequisites',
         'Additional time commitments',
       ],
-    },
-  },
-};
-
-export const projectFileExamples = {
-  validFile: {
-    summary: 'Valid File Upload',
-    description: 'Example of a valid file upload request',
-    value: {
-      file: 'project-description.pdf', // Binary file data
-    },
-  },
-  pdfFile: {
-    summary: 'PDF File Upload',
-    description: 'Example of uploading a PDF document',
-    value: {
-      file: 'detailed-requirements.pdf', // Binary file data
-    },
-  },
-  wordFile: {
-    summary: 'Word Document Upload',
-    description: 'Example of uploading a Word document',
-    value: {
-      file: 'research-proposal.docx', // Binary file data
-    },
-  },
-  invalidFile: {
-    summary: 'Invalid File Upload',
-    description: 'Example of an invalid file upload attempt',
-    value: {
-      file: 'large-video.mp4', // Unsupported file type
-    },
-  },
-};
-
-export const findProfessorProjectsExamples = {
-  allProjects: {
-    summary: 'All Professor Projects',
-    description: 'Example of retrieving all projects for a professor',
-    value: {
-      status: undefined, // Returns projects of all statuses
-    },
-  },
-  draftProjects: {
-    summary: 'Draft Projects',
-    description: 'Example of retrieving only draft projects',
-    value: {
-      status: 'DRAFT',
-    },
-  },
-  publishedProjects: {
-    summary: 'Published Projects',
-    description: 'Example of retrieving only published projects',
-    value: {
-      status: 'PUBLISHED',
-    },
-  },
-  archivedProjects: {
-    summary: 'Archived Projects',
-    description: 'Example of retrieving only archived projects',
-    value: {
-      status: 'ARCHIVED',
-    },
-  },
-};
-
-export const deleteFileExamples = {
-  validDelete: {
-    summary: 'Valid File Deletion',
-    description: 'Example of a valid file deletion request',
-    value: {
-      fileName: 'project-description.pdf',
-    },
-  },
-  invalidDelete: {
-    summary: 'Invalid File Deletion',
-    description: 'Example of an invalid file deletion request',
-    value: {
-      fileName: 'nonexistent-file.pdf',
     },
   },
 };

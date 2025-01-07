@@ -5,6 +5,7 @@ import { ValidateNested, IsNotEmpty } from 'class-validator';
 import { AdditionalInfoDto } from '@/common/dto/applications/additional-info.dto';
 import { AvailabilityDto } from '@/common/dto/applications/student-availability.dto';
 import { StudentInfoDto } from '@/common/dto/applications/student-info.dto';
+import { ProjectLength, WeeklyAvailability } from '@/common/enums';
 
 @ApiExtraModels(StudentInfoDto, AvailabilityDto, AdditionalInfoDto)
 export class CreateApplicationDto {
@@ -43,8 +44,8 @@ export class CreateApplicationDto {
       wednesdayAvailability: '9AM-5PM',
       thursdayAvailability: '9AM-5PM',
       fridayAvailability: '9AM-5PM',
-      weeklyHours: 'NINE_TO_ELEVEN',
-      desiredProjectLength: 'ONE_SEMESTER',
+      weeklyHours: WeeklyAvailability.NINE_TO_ELEVEN,
+      desiredProjectLength: ProjectLength.THREE,
     },
   })
   @ValidateNested({ message: 'Availability information is invalid' })

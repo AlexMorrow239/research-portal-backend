@@ -70,15 +70,52 @@ export const ApiUpdateApplicationStatus = () =>
     ApiOperation(ApplicationDescriptions.updateStatus),
     ApiParam(ApplicationDescriptions.params.projectId),
     ApiParam(ApplicationDescriptions.params.applicationId),
-    ApiBody({ type: UpdateApplicationStatusDto }),
+    ApiBody({
+      type: UpdateApplicationStatusDto,
+      examples: {
+        accept: {
+          summary: 'Accept Application',
+          description: 'Accept a pending application',
+          value: {
+            status: ApplicationStatus.ACCEPTED,
+          },
+        },
+        reject: {
+          summary: 'Reject Application',
+          description: 'Reject a pending application',
+          value: {
+            status: ApplicationStatus.REJECTED,
+          },
+        },
+        withdraw: {
+          summary: 'Mark as Withdrawn',
+          description: 'Mark application as withdrawn by student',
+          value: {
+            status: ApplicationStatus.WITHDRAWN,
+          },
+        },
+      },
+    }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'Application status updated successfully',
+      description: ApplicationDescriptions.responses.statusUpdated,
       type: ApplicationResponseDto,
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
-    ApiNotFoundResponse({ description: 'Application not found' }),
-    ApiBadRequestResponse({ description: 'Invalid status value' }),
+    ApiUnauthorizedResponse({
+      description: ApplicationDescriptions.responses.unauthorized,
+    }),
+    ApiNotFoundResponse({
+      description: ApplicationDescriptions.responses.notFound,
+    }),
+    ApiBadRequestResponse({
+      description: `Invalid request. Possible reasons:
+          - ${ApplicationDescriptions.responses.invalidTransition}
+          - ${ApplicationDescriptions.responses.alreadyProcessed}`,
+    }),
+    ApiResponse({
+      status: HttpStatus.UNPROCESSABLE_ENTITY,
+      description: 'Invalid status value provided',
+    }),
   );
 
 export const ApiDownloadResume = () =>

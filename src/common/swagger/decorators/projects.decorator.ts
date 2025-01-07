@@ -24,13 +24,7 @@ import {
 import { ProjectStatus } from '@/modules/projects/schemas/projects.schema';
 
 import { ProjectDescriptions } from '../descriptions/projects.description';
-import {
-  createProjectExamples,
-  updateProjectExamples,
-  projectFileExamples,
-  findProfessorProjectsExamples,
-  deleteFileExamples,
-} from '../examples/project.examples';
+import { createProjectExamples, updateProjectExamples } from '../examples/project.examples';
 
 export const ApiCreateProject = () =>
   applyDecorators(
@@ -148,10 +142,6 @@ export const ApiFindProfessorProjects = () =>
       enum: ProjectStatus,
       description: 'Filter by project status',
     }),
-    ApiBody({
-      examples: findProfessorProjectsExamples,
-      description: 'Filter criteria for professor projects',
-    }),
     ApiResponse({
       status: HttpStatus.OK,
       description: ProjectDescriptions.responses.retrieved,
@@ -175,10 +165,6 @@ export const ApiDeleteProjectFile = () =>
       name: 'fileName',
       description: 'Name of the file to delete',
       example: 'project-description.pdf',
-    }),
-    ApiBody({
-      examples: deleteFileExamples,
-      description: 'File deletion request',
     }),
     ApiResponse({
       status: HttpStatus.NO_CONTENT,
@@ -263,8 +249,16 @@ export const ApiUploadProjectFile = () =>
       example: '507f1f77bcf86cd799439011',
     }),
     ApiBody({
-      type: ProjectFileDto,
-      examples: projectFileExamples,
+      schema: {
+        type: 'object',
+        properties: {
+          file: {
+            type: 'string',
+            format: 'binary',
+            description: 'File to upload (PDF, DOC, or DOCX)',
+          },
+        },
+      },
     }),
     ApiResponse({
       status: HttpStatus.CREATED,
