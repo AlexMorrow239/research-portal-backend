@@ -1,36 +1,35 @@
 export const ProjectDescriptions = {
   create: {
-    summary: 'Create a new research project',
-    description:
-      'Creates a new research project. All dates must be in the future, and endDate must be after startDate.',
+    summary: 'Create a new project',
+    description: 'Creates a new project for the authenticated professor',
   },
   findAll: {
-    summary: 'List all research projects',
-    description:
-      'Retrieve a paginated list of all visible research projects. Returns PUBLISHED projects by default. No authentication required.',
+    summary: 'Get all projects',
+    description: 'Retrieves all projects with optional filtering and pagination',
   },
   findProfessorProjects: {
-    summary: "Get professor's projects",
-    description: 'Retrieve all projects created by the authenticated professor',
+    summary: 'Get professor projects',
+    description: 'Retrieves all projects belonging to the authenticated professor',
   },
   findOne: {
     summary: 'Get project by ID',
-    description: 'Retrieve detailed information about a specific project',
+    description: 'Retrieves a specific project by its ID',
   },
   update: {
     summary: 'Update project',
-    description: 'Update an existing project. Only project owner can update.',
+    description: 'Updates a project by its ID. Only the project owner can update it',
   },
   remove: {
     summary: 'Delete project',
-    description: 'Delete a project and all associated files. Only project owner can delete.',
+    description: 'Deletes a project by its ID. Only the project owner can delete it',
   },
   uploadFile: {
     summary: 'Upload project file',
-    description: 'Upload a file for a project. Maximum size: 5MB. Allowed types: PDF, DOC, DOCX',
+    description:
+      'Uploads a file to a specific project. Supports PDF, DOC, and DOCX formats up to 5MB',
   },
   deleteFile: {
     summary: 'Delete project file',
-    description: 'Delete a file from a project. Only project owner can delete files.',
+    description: 'Deletes a file from a specific project',
   },
 };

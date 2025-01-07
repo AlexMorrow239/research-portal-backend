@@ -30,3 +30,11 @@ export enum ProjectLength {
   THREE = '3',
   FOUR_PLUS = '4+',
 }
+
+export enum AcademicStanding {
+  FRESHMAN = 'freshman',
+  SOPHOMORE = 'sophomore',
+  JUNIOR = 'junior',
+  SENIOR = 'senior',
+  GRAD = 'graduate',
+}

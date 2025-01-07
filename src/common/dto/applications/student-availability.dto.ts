@@ -23,12 +23,19 @@ export class AvailabilityDto {
   @ApiProperty()
   @IsString()
   fridayAvailability: string;
-
-  @ApiProperty({ enum: WeeklyAvailability })
+  @ApiProperty({
+    enum: WeeklyAvailability,
+    description: 'Number of hours available per week',
+    example: WeeklyAvailability.NINE_TO_ELEVEN,
+  })
   @IsEnum(WeeklyAvailability)
   weeklyHours: string;
 
-  @ApiProperty({ enum: ProjectLength })
+  @ApiProperty({
+    enum: ProjectLength,
+    description: 'Desired length of the project',
+    example: ProjectLength.FOUR_PLUS,
+  })
   @IsEnum(ProjectLength)
   desiredProjectLength: ProjectLength;
 }
