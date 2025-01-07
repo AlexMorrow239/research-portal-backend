@@ -37,7 +37,7 @@ class ApplicationFunnelStats {
   offerAcceptanceRate: number;
 }
 
-export class ComprehensiveAnalyticsDto {
+export class AnalyticsDto {
   @ApiProperty()
   emailEngagement: EmailEngagementStats;
 

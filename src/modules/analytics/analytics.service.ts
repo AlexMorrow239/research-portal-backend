@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { ComprehensiveAnalyticsDto } from '@/common/dto/analytics/comprehensive-analytics.dto';
+import { AnalyticsDto } from '@/common/dto/analytics/analytics.dto';
 import { ApplicationStatus } from '@/common/enums';
 
 import { ApplicationAnalytics } from './schemas/application-analytics.schema';
@@ -61,7 +61,7 @@ export class AnalyticsService {
     }
   }
 
-  async getProjectAnalytics(projectId: string): Promise<ComprehensiveAnalyticsDto> {
+  async getProjectAnalytics(projectId: string): Promise<AnalyticsDto> {
     try {
       const [applicationMetrics, emailMetrics] = await Promise.all([
         this.analyticsModel.findOne({ project: projectId }),
@@ -83,7 +83,7 @@ export class AnalyticsService {
     }
   }
 
-  async getGlobalAnalytics(): Promise<ComprehensiveAnalyticsDto> {
+  async getGlobalAnalytics(): Promise<AnalyticsDto> {
     try {
       const [applicationTotals, emailMetrics] = await Promise.all([
         this.analyticsModel.aggregate([
@@ -107,7 +107,7 @@ export class AnalyticsService {
     }
   }
 
-  private formatAnalytics(applicationMetrics: any, emailMetrics: any): ComprehensiveAnalyticsDto {
+  private formatAnalytics(applicationMetrics: any, emailMetrics: any): AnalyticsDto {
     const {
       totalApplications = 0,
       totalInterviews = 0,
