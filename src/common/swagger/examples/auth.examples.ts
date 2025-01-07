@@ -1,12 +1,7 @@
-export interface LoginExample {
-  email: string;
-  password: string;
-}
-
 export const loginExamples = {
   valid: {
-    summary: 'Valid Login',
-    description: 'Example of a valid login request',
+    summary: 'Valid Login Credentials',
+    description: 'Example of a valid login request with miami.edu email',
     value: {
       email: 'professor.test@miami.edu',
       password: 'SecurePass123!',
@@ -14,10 +9,26 @@ export const loginExamples = {
   },
   invalidEmail: {
     summary: 'Invalid Email Domain',
-    description: 'Example of login with non-miami.edu email',
+    description: 'Example of an invalid login attempt with non-miami.edu email',
     value: {
       email: 'professor@gmail.com',
       password: 'SecurePass123!',
+    },
+  },
+  deactivatedAccount: {
+    summary: 'Deactivated Account',
+    description: 'Example of login attempt with a deactivated account',
+    value: {
+      email: 'inactive.professor@miami.edu',
+      password: 'SecurePass123!',
+    },
+  },
+  invalidFormat: {
+    summary: 'Invalid Format',
+    description: 'Example of login attempt with invalid data format',
+    value: {
+      email: 'not-an-email',
+      password: '',
     },
   },
 };

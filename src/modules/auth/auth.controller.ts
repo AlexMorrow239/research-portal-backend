@@ -28,10 +28,28 @@ export class AuthController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Successfully logged in',
+    description: AuthDescriptions.responses.loginSuccess,
     type: LoginResponseDto,
   })
-  @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
+  @ApiUnauthorizedResponse({
+    description: AuthDescriptions.responses.invalidCredentials,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: AuthDescriptions.responses.inactiveAccount,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: AuthDescriptions.responses.invalidEmailDomain,
+  })
+  @ApiResponse({
+    status: HttpStatus.TOO_MANY_REQUESTS,
+    description: AuthDescriptions.responses.tooManyAttempts,
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: AuthDescriptions.responses.serverError,
+  })
   async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto.email, loginDto.password);
   }

@@ -10,6 +10,8 @@ import {
   ApiUnauthorizedResponse,
   ApiBadRequestResponse,
   ApiNotFoundResponse,
+  ApiForbiddenResponse,
+  ApiTooManyRequestsResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
 
@@ -22,7 +24,14 @@ import {
 import { ProjectStatus } from '@/modules/projects/schemas/projects.schema';
 
 import { ProjectDescriptions } from '../descriptions/projects.description';
-import { createProjectExamples, updateProjectExamples } from '../examples/project.examples';
+import {
+  createProjectExamples,
+  updateProjectExamples,
+  projectFileExamples,
+  findAllExamples,
+  findProfessorProjectsExamples,
+  deleteFileExamples,
+} from '../examples/project.examples';
 
 export const ApiCreateProject = () =>
   applyDecorators(
@@ -34,11 +43,22 @@ export const ApiCreateProject = () =>
     }),
     ApiResponse({
       status: HttpStatus.CREATED,
-      description: 'Project created successfully',
+      description: ProjectDescriptions.responses.created,
       type: ProjectResponseDto,
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
-    ApiBadRequestResponse({ description: 'Invalid project data' }),
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
+    }),
+    ApiBadRequestResponse({
+      description: ProjectDescriptions.responses.invalidData,
+    }),
+    ApiForbiddenResponse({
+      description: ProjectDescriptions.responses.ownershipRequired,
+    }),
+    ApiResponse({
+      status: HttpStatus.INTERNAL_SERVER_ERROR,
+      description: ProjectDescriptions.responses.serverError,
+    }),
   );
 
 export const ApiFindAllProjects = () =>
@@ -49,40 +69,50 @@ export const ApiFindAllProjects = () =>
       required: false,
       type: Number,
       description: 'Page number (default: 1)',
+      example: 1,
     }),
     ApiQuery({
       name: 'limit',
       required: false,
       type: Number,
       description: 'Items per page (default: 10)',
+      example: 10,
     }),
     ApiQuery({
       name: 'department',
       required: false,
       type: String,
       description: 'Filter by professor department',
+      example: 'Computer Science',
     }),
     ApiQuery({
       name: 'status',
       required: false,
       enum: ProjectStatus,
       description: 'Filter by project status (default: PUBLISHED)',
+      example: ProjectStatus.PUBLISHED,
     }),
     ApiQuery({
       name: 'search',
       required: false,
       type: String,
       description: 'Search in title and description',
+      example: 'machine learning',
     }),
     ApiQuery({
       name: 'researchCategories',
       required: false,
       type: [String],
       description: 'Filter by research categories (comma-separated)',
+      example: ['Machine Learning', 'Computer Vision'],
+    }),
+    ApiBody({
+      examples: findAllExamples,
+      description: 'Search and filter criteria for projects',
     }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'Projects retrieved successfully',
+      description: ProjectDescriptions.responses.retrieved,
       schema: {
         properties: {
           projects: {
@@ -92,9 +122,23 @@ export const ApiFindAllProjects = () =>
           total: {
             type: 'number',
             example: 50,
+            description: 'Total number of projects matching the criteria',
+          },
+          page: {
+            type: 'number',
+            example: 1,
+            description: 'Current page number',
+          },
+          limit: {
+            type: 'number',
+            example: 10,
+            description: 'Number of items per page',
           },
         },
       },
+    }),
+    ApiBadRequestResponse({
+      description: ProjectDescriptions.responses.invalidData,
     }),
   );
 
@@ -106,14 +150,74 @@ export const ApiFindProfessorProjects = () =>
       name: 'status',
       required: false,
       enum: ProjectStatus,
-      description: 'Filter projects by status',
+      description: 'Filter by project status',
+    }),
+    ApiBody({
+      examples: findProfessorProjectsExamples,
+      description: 'Filter criteria for professor projects',
     }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'Projects retrieved successfully',
+      description: ProjectDescriptions.responses.retrieved,
       type: [ProjectResponseDto],
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
+    }),
+  );
+
+export const ApiDeleteProjectFile = () =>
+  applyDecorators(
+    ApiBearerAuth(),
+    ApiOperation(ProjectDescriptions.deleteFile),
+    ApiParam({
+      name: 'id',
+      description: 'Project ID',
+      example: '507f1f77bcf86cd799439011',
+    }),
+    ApiParam({
+      name: 'fileName',
+      description: 'Name of the file to delete',
+      example: 'project-description.pdf',
+    }),
+    ApiBody({
+      examples: deleteFileExamples,
+      description: 'File deletion request',
+    }),
+    ApiResponse({
+      status: HttpStatus.NO_CONTENT,
+      description: ProjectDescriptions.responses.fileDeleted,
+    }),
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
+    }),
+    ApiForbiddenResponse({
+      description: ProjectDescriptions.responses.ownershipRequired,
+    }),
+    ApiNotFoundResponse({
+      description: ProjectDescriptions.responses.notFound,
+    }),
+    ApiBadRequestResponse({
+      description: ProjectDescriptions.responses.invalidData,
+    }),
+  );
+
+export const ApiFindOneProject = () =>
+  applyDecorators(
+    ApiOperation(ProjectDescriptions.findOne),
+    ApiParam({
+      name: 'id',
+      description: 'Project ID',
+      example: '507f1f77bcf86cd799439011',
+    }),
+    ApiResponse({
+      status: HttpStatus.OK,
+      description: ProjectDescriptions.responses.retrieved,
+      type: ProjectResponseDto,
+    }),
+    ApiNotFoundResponse({
+      description: ProjectDescriptions.responses.notFound,
+    }),
   );
 
 export const ApiUpdateProject = () =>
@@ -131,12 +235,25 @@ export const ApiUpdateProject = () =>
     }),
     ApiResponse({
       status: HttpStatus.OK,
-      description: 'Project updated successfully',
+      description: ProjectDescriptions.responses.updated,
       type: ProjectResponseDto,
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
-    ApiNotFoundResponse({ description: 'Project not found' }),
-    ApiBadRequestResponse({ description: 'Invalid update data' }),
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
+    }),
+    ApiForbiddenResponse({
+      description: ProjectDescriptions.responses.ownershipRequired,
+    }),
+    ApiNotFoundResponse({
+      description: ProjectDescriptions.responses.notFound,
+    }),
+    ApiBadRequestResponse({
+      description: ProjectDescriptions.responses.invalidData,
+    }),
+    ApiResponse({
+      status: HttpStatus.CONFLICT,
+      description: ProjectDescriptions.responses.statusTransitionError,
+    }),
   );
 
 export const ApiUploadProjectFile = () =>
@@ -151,31 +268,28 @@ export const ApiUploadProjectFile = () =>
     }),
     ApiBody({
       type: ProjectFileDto,
+      examples: projectFileExamples,
     }),
     ApiResponse({
       status: HttpStatus.CREATED,
-      description: 'File uploaded successfully',
+      description: ProjectDescriptions.responses.fileUploaded,
       type: ProjectFileDto,
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
-    ApiNotFoundResponse({ description: 'Project not found' }),
-    ApiBadRequestResponse({ description: 'Invalid file type or size' }),
-  );
-
-export const ApiFindOneProject = () =>
-  applyDecorators(
-    ApiOperation(ProjectDescriptions.findOne),
-    ApiParam({
-      name: 'id',
-      description: 'Project ID',
-      example: '507f1f77bcf86cd799439011',
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
     }),
-    ApiResponse({
-      status: HttpStatus.OK,
-      description: 'Project retrieved successfully',
-      type: ProjectResponseDto,
+    ApiForbiddenResponse({
+      description: ProjectDescriptions.responses.ownershipRequired,
     }),
-    ApiNotFoundResponse({ description: 'Project not found' }),
+    ApiNotFoundResponse({
+      description: ProjectDescriptions.responses.notFound,
+    }),
+    ApiBadRequestResponse({
+      description: ProjectDescriptions.responses.invalidFile,
+    }),
+    ApiTooManyRequestsResponse({
+      description: ProjectDescriptions.responses.fileQuotaExceeded,
+    }),
   );
 
 export const ApiRemoveProject = () =>
@@ -189,32 +303,22 @@ export const ApiRemoveProject = () =>
     }),
     ApiResponse({
       status: HttpStatus.NO_CONTENT,
-      description: 'Project deleted successfully',
+      description: ProjectDescriptions.responses.deleted,
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
-    ApiNotFoundResponse({ description: 'Project not found' }),
-    ApiBadRequestResponse({ description: 'Invalid project ID' }),
-  );
-
-export const ApiDeleteProjectFile = () =>
-  applyDecorators(
-    ApiBearerAuth(),
-    ApiOperation(ProjectDescriptions.deleteFile),
-    ApiParam({
-      name: 'id',
-      description: 'Project ID',
-      example: '507f1f77bcf86cd799439011',
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
     }),
-    ApiParam({
-      name: 'fileName',
-      description: 'Name of the file to delete',
-      example: 'project-description.pdf',
+    ApiForbiddenResponse({
+      description: ProjectDescriptions.responses.ownershipRequired,
+    }),
+    ApiNotFoundResponse({
+      description: ProjectDescriptions.responses.notFound,
+    }),
+    ApiBadRequestResponse({
+      description: ProjectDescriptions.responses.invalidData,
     }),
     ApiResponse({
-      status: HttpStatus.NO_CONTENT,
-      description: 'File deleted successfully',
+      status: HttpStatus.CONFLICT,
+      description: ProjectDescriptions.responses.archiveError,
     }),
-    ApiUnauthorizedResponse({ description: 'Not authenticated' }),
-    ApiNotFoundResponse({ description: 'Project or file not found' }),
-    ApiBadRequestResponse({ description: 'Invalid project ID or filename' }),
   );
