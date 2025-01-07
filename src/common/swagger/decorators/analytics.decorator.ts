@@ -8,7 +8,7 @@ import {
   ApiNotFoundResponse,
 } from '@nestjs/swagger';
 
-import { ComprehensiveAnalyticsDto } from '@/common/dto/analytics/comprehensive-analytics.dto';
+import { AnalyticsDto } from '@/common/dto/analytics/analytics.dto';
 
 import { AnalyticsDescriptions } from '../descriptions/analytics.description';
 
@@ -24,7 +24,7 @@ export const ApiGetProjectAnalytics = () =>
     ApiResponse({
       status: HttpStatus.OK,
       description: AnalyticsDescriptions.responses.retrieved,
-      type: ComprehensiveAnalyticsDto,
+      type: AnalyticsDto,
     }),
     ApiUnauthorizedResponse({
       description: AnalyticsDescriptions.responses.unauthorized,
@@ -41,7 +41,7 @@ export const ApiGetGlobalAnalytics = () =>
     ApiResponse({
       status: HttpStatus.OK,
       description: AnalyticsDescriptions.responses.retrieved,
-      type: ComprehensiveAnalyticsDto,
+      type: AnalyticsDto,
     }),
     ApiUnauthorizedResponse({
       description: AnalyticsDescriptions.responses.unauthorized,
