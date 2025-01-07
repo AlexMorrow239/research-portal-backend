@@ -1,3 +1,16 @@
+// Helper function to generate dates
+const getFutureDate = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() + 6); // 6 months in the future
+  return date.toISOString();
+};
+
+const getPastDate = () => {
+  const date = new Date();
+  date.setMonth(date.getMonth() - 1); // 1 month in the past
+  return date.toISOString();
+};
+
 export const createProjectExamples = {
   complete: {
     summary: 'Complete Project Creation',
@@ -22,7 +35,7 @@ export const createProjectExamples = {
       ],
       status: 'PUBLISHED',
       positions: 2,
-      applicationDeadline: '2024-12-31T23:59:59.999Z',
+      applicationDeadline: getFutureDate(),
       isVisible: true,
     },
   },
@@ -52,8 +65,21 @@ export const createProjectExamples = {
       ],
       status: 'DRAFT',
       positions: 2,
-      applicationDeadline: '2024-12-31T23:59:59.999Z',
+      applicationDeadline: getFutureDate(),
       isVisible: false,
+    },
+  },
+  invalidDeadline: {
+    summary: 'Invalid Deadline',
+    description: 'Example of project creation with past deadline (will fail validation)',
+    value: {
+      title: 'Invalid Project',
+      description: 'This project has an invalid past deadline.',
+      researchCategories: ['Computer Science'],
+      requirements: ['Programming experience'],
+      status: 'DRAFT',
+      positions: 1,
+      applicationDeadline: getPastDate(), // Dynamic past date
     },
   },
 };
@@ -153,57 +179,6 @@ export const projectFileExamples = {
     description: 'Example of an invalid file upload attempt',
     value: {
       file: 'large-video.mp4', // Unsupported file type
-    },
-  },
-};
-
-export const findAllExamples = {
-  basic: {
-    summary: 'Basic Search',
-    description: 'Example of basic project search',
-    value: {
-      page: 1,
-      limit: 10,
-      status: 'PUBLISHED',
-    },
-  },
-  advanced: {
-    summary: 'Advanced Search',
-    description: 'Example of advanced project search with filters',
-    value: {
-      page: 1,
-      limit: 20,
-      department: 'Computer Science',
-      status: 'PUBLISHED',
-      search: 'machine learning',
-      researchCategories: ['AI', 'Machine Learning'],
-    },
-  },
-  departmentFilter: {
-    summary: 'Department Filter',
-    description: 'Example of filtering projects by department',
-    value: {
-      department: 'Computer Science',
-      page: 1,
-      limit: 10,
-    },
-  },
-  categoryFilter: {
-    summary: 'Category Filter',
-    description: 'Example of filtering projects by research categories',
-    value: {
-      researchCategories: ['Machine Learning', 'Artificial Intelligence'],
-      page: 1,
-      limit: 10,
-    },
-  },
-  textSearch: {
-    summary: 'Text Search',
-    description: 'Example of searching projects by text',
-    value: {
-      search: 'artificial intelligence healthcare',
-      page: 1,
-      limit: 10,
     },
   },
 };

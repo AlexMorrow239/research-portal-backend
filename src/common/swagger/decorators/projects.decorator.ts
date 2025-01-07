@@ -28,7 +28,6 @@ import {
   createProjectExamples,
   updateProjectExamples,
   projectFileExamples,
-  findAllExamples,
   findProfessorProjectsExamples,
   deleteFileExamples,
 } from '../examples/project.examples';
@@ -103,12 +102,9 @@ export const ApiFindAllProjects = () =>
       name: 'researchCategories',
       required: false,
       type: [String],
+      isArray: true,
       description: 'Filter by research categories (comma-separated)',
       example: ['Machine Learning', 'Computer Vision'],
-    }),
-    ApiBody({
-      examples: findAllExamples,
-      description: 'Search and filter criteria for projects',
     }),
     ApiResponse({
       status: HttpStatus.OK,
