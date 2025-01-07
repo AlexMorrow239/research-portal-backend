@@ -34,15 +34,17 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
+import {
+  CreateProjectDto,
+  ProjectFileDto,
+  ProjectResponseDto,
+  UpdateProjectDto,
+} from '@/common/dto/projects';
 import { createProjectExamples, updateProjectExamples } from '@/common/swagger';
 import { ProjectDescriptions } from '@/common/swagger/descriptions/projects.description';
 
 import { ProjectsService } from './projects.service';
 import { ProjectStatus } from './schemas/projects.schema';
-import { CreateProjectDto } from '../../common/dto/projects/create-project.dto';
-import { ProjectFileDto } from '../../common/dto/projects/project-file.dto';
-import { ProjectResponseDto } from '../../common/dto/projects/project-response.dto';
-import { UpdateProjectDto } from '../../common/dto/projects/update-project.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from '../professors/decorators/get-professor.decorator';
 import { Professor } from '../professors/schemas/professors.schema';
@@ -268,17 +270,7 @@ export class ProjectsController {
     example: '507f1f77bcf86cd799439011',
   })
   @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['file'],
-      properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-          description: 'File to upload (PDF, DOC, DOCX only, max 5MB)',
-        },
-      },
-    },
+    type: ProjectFileDto,
   })
   @ApiResponse({
     status: HttpStatus.CREATED,

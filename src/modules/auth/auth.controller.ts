@@ -7,9 +7,9 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+import { LoginResponseDto } from '@/common/dto/auth/login-response.dto';
 import { loginExamples } from '@/common/swagger';
 import { AuthDescriptions } from '@/common/swagger/descriptions/auth.description';
-import { AuthSchemas } from '@/common/swagger/schemas/auth.schemas';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from '../../common/dto/auth/login.dto';
@@ -29,7 +29,7 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Successfully logged in',
-    ...AuthSchemas.LoginResponse,
+    type: LoginResponseDto,
   })
   @ApiUnauthorizedResponse({ description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {

@@ -20,6 +20,13 @@ import {
   ApiBadRequestResponse,
 } from '@nestjs/swagger';
 
+import {
+  ChangePasswordDto,
+  CreateProfessorDto,
+  ProfessorResponseDto,
+  ReactivateAccountDto,
+  UpdateProfessorDto,
+} from '@/common/dto/professors';
 import { createProfessorExamples, updateProfessorExamples } from '@/common/swagger';
 import { ProfessorDescriptions } from '@/common/swagger/descriptions/professors.description';
 import {
@@ -30,11 +37,6 @@ import {
 import { GetProfessor } from './decorators/get-professor.decorator';
 import { ProfessorsService } from './professors.service';
 import { Professor } from './schemas/professors.schema';
-import { ChangePasswordDto } from '../../common/dto/professors/change-password.dto';
-import { CreateProfessorDto } from '../../common/dto/professors/create-professor.dto';
-import { ProfessorResponseDto } from '../../common/dto/professors/professor-response.dto';
-import { ReactivateAccountDto } from '../../common/dto/professors/reactivate-account.dto';
-import { UpdateProfessorDto } from '../../common/dto/professors/update-professor.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Professors')
