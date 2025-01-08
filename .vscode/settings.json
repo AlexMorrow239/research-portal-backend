@@ -1,79 +1,72 @@
 {
-    // Formatting & Linting
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit",
-      "source.organizeImports": "never"
-    },
+  // Project-specific ESLint configuration
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.run": "onSave",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "always"
+  },
+
+  // Project-specific TypeScript settings
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+
+  // Project-specific file handling
+  "prettier.requireConfig": true,
+  "files.associations": {
+    "*.env*": "env",
+    ".env.*": "env"
+  },
+
+  // Project-specific exclusions
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "coverage": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "coverage": true
+  },
+
+  // Project-specific language settings
+  "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    
-    // Language-specific settings
-    "[typescript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.tabSize": 2
-    },
-    "[javascript]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.tabSize": 2
-    },
-    "[json]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.tabSize": 2
-    },
-    "[jsonc]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.tabSize": 2
-    },
+    "editor.tabSize": 2
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  // Project-specific editor settings
+  "editor.rulers": [100],
   
-    // File validation
-    "eslint.validate": [
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact"
-    ],
-    "prettier.requireConfig": true,
-  
-    // TypeScript settings
-    "typescript.preferences.importModuleSpecifier": "non-relative",
-    "typescript.updateImportsOnFileMove.enabled": "always",
-    "typescript.suggest.autoImports": true,
-    "typescript.preferences.quoteStyle": "single",
-  
-    // File associations
-    "files.associations": {
-      "*.env*": "env",
-      ".env.*": "env"
-    },
-  
-    // File exclusions
-    "files.exclude": {
-      "**/.git": true,
-      "**/.DS_Store": true,
-      "**/node_modules": true,
-      "**/dist": true,
-      "coverage": true
-    },
-  
-    // Search exclusions
-    "search.exclude": {
-      "**/node_modules": true,
-      "**/dist": true,
-      "coverage": true
-    },
-  
-    // Editor settings
-    "editor.rulers": [100],
-    "editor.bracketPairColorization.enabled": true,
-    "editor.guides.bracketPairs": true,
-    "editor.suggestSelection": "first",
-    "editor.wordWrap": "off",
-    "editor.detectIndentation": false,
-    "editor.insertSpaces": true,
-    "editor.tabSize": 2,
-  
-    // Terminal settings
-    "terminal.integrated.defaultProfile.linux": "bash",
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    "terminal.integrated.defaultProfile.osx": "bash"
+  // Project-specific emmet settings
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
   }
+}
