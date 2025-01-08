@@ -10,8 +10,8 @@ import { ApplicationAnalytics } from '../schemas/application-analytics.schema';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
-  let analyticsModel: Model<ApplicationAnalytics>;
-  let emailTrackingService: EmailTrackingService;
+  let _analyticsModel: Model<ApplicationAnalytics>;
+  let _emailTrackingService: EmailTrackingService;
 
   const mockAnalyticsModel = {
     findOne: jest.fn(),
@@ -40,10 +40,10 @@ describe('AnalyticsService', () => {
     }).compile();
 
     service = module.get<AnalyticsService>(AnalyticsService);
-    analyticsModel = module.get<Model<ApplicationAnalytics>>(
+    _analyticsModel = module.get<Model<ApplicationAnalytics>>(
       getModelToken(ApplicationAnalytics.name),
     );
-    emailTrackingService = module.get<EmailTrackingService>(EmailTrackingService);
+    _emailTrackingService = module.get<EmailTrackingService>(EmailTrackingService);
   });
 
   describe('updateApplicationMetrics', () => {

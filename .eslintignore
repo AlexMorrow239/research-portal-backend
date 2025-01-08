@@ -1,7 +1,11 @@
 dist
-node_modules
+build
 coverage
-.eslintrc.js
-jest.config.js
-uploads/
+node_modules
+uploads
+uploads/projects
+uploads/resumes
+.nest
 test/jest-e2e.json
+jest.config.ts
+.eslintrc.js

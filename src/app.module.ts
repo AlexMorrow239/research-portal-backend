@@ -1,10 +1,11 @@
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MulterModule } from '@nestjs/platform-express';
-import { existsSync, mkdirSync } from 'fs';
 import { diskStorage } from 'multer';
-import { join } from 'path';
 
 import { AnalyticsModule } from '@/modules/analytics/analytics.module';
 
