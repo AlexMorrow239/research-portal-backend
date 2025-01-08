@@ -68,6 +68,7 @@ describe('ProjectsController', () => {
         positions: 2,
         status: ProjectStatus.DRAFT,
         researchCategories: ['Category1', 'Category2'],
+        applicationDeadline: new Date('2024-12-31'), // Add this line
       };
 
       jest.spyOn(projectsService, 'create').mockResolvedValue(mockProject);

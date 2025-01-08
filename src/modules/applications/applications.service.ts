@@ -101,6 +101,11 @@ export class ApplicationsService {
         throw new NotFoundException('Application not found');
       }
 
+      // Add this check to verify professor ownership
+      if (application.project.professor.toString() !== professorId) {
+        throw new NotFoundException('Application not found');
+      }
+
       const oldStatus = application.status;
       const updatedApplication = await this.applicationModel
         .findByIdAndUpdate(applicationId, { status }, { new: true })

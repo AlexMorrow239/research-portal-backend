@@ -3,6 +3,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 
+import { AnalyticsService } from '@/modules/analytics/analytics.service';
 import { ApplicationStatus } from '@common/enums';
 
 import { EmailService } from '../../email/email.service';
@@ -18,6 +19,7 @@ describe('ApplicationsService', () => {
   let projectsService: ProjectsService;
   let fileStorageService: FileStorageService;
   let emailService: EmailService;
+  let analyticsService: AnalyticsService;
 
   const mockApplication = {
     id: 'app1',
@@ -85,6 +87,7 @@ describe('ApplicationsService', () => {
             findById: jest.fn(),
             findByIdAndUpdate: jest.fn(),
             populate: jest.fn(),
+            exec: jest.fn(),
           },
         },
         {
@@ -112,6 +115,14 @@ describe('ApplicationsService', () => {
             sendApplicationStatusUpdate: jest.fn(),
           },
         },
+        {
+          provide: AnalyticsService,
+          useValue: {
+            updateApplicationMetrics: jest.fn(),
+            getProjectAnalytics: jest.fn(),
+            getGlobalAnalytics: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -120,6 +131,7 @@ describe('ApplicationsService', () => {
     projectsService = module.get<ProjectsService>(ProjectsService);
     fileStorageService = module.get<FileStorageService>(FileStorageService);
     emailService = module.get<EmailService>(EmailService);
+    analyticsService = module.get<AnalyticsService>(AnalyticsService);
   });
 
   describe('create', () => {
@@ -160,23 +172,66 @@ describe('ApplicationsService', () => {
 
   describe('updateStatus', () => {
     it('should update application status successfully', async () => {
+      // Setup mock data with proper structure
       const populatedApplication = {
         ...mockApplication,
-        project: mockProject,
+        project: {
+          id: 'project1',
+          title: 'Test Project',
+          professor: {
+            id: 'prof1',
+            toString: () => 'prof1',
+          },
+        },
+        status: ApplicationStatus.PENDING,
+        studentInfo: {
+          email: 'student@miami.edu',
+        },
       };
 
-      jest.spyOn(applicationModel, 'findById').mockReturnValue({
-        populate: jest.fn().mockResolvedValue(populatedApplication),
-      } as any);
+      const updatedApplication = {
+        ...populatedApplication,
+        status: ApplicationStatus.ACCEPTED,
+      };
 
-      jest.spyOn(applicationModel, 'findByIdAndUpdate').mockReturnValue({
-        populate: jest.fn().mockResolvedValue(populatedApplication),
-      } as any);
+      // Mock findById chain
+      jest.spyOn(applicationModel, 'findById').mockImplementation(
+        () =>
+          ({
+            populate: jest.fn().mockResolvedValue(populatedApplication),
+          }) as any,
+      );
+
+      // Mock findByIdAndUpdate chain
+      jest.spyOn(applicationModel, 'findByIdAndUpdate').mockImplementation(
+        () =>
+          ({
+            populate: jest.fn().mockResolvedValue(updatedApplication),
+          }) as any,
+      );
 
       const result = await service.updateStatus('prof1', 'app1', ApplicationStatus.ACCEPTED);
 
-      expect(result).toBeDefined();
-      expect(emailService.sendApplicationStatusUpdate).toHaveBeenCalled();
+      // Verify the result
+      expect(result).toEqual(updatedApplication);
+
+      // Verify all service calls were made
+      expect(applicationModel.findById).toHaveBeenCalledWith('app1');
+      expect(applicationModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        'app1',
+        { status: ApplicationStatus.ACCEPTED },
+        { new: true },
+      );
+      expect(emailService.sendApplicationStatusUpdate).toHaveBeenCalledWith(
+        'student@miami.edu',
+        'Test Project',
+        ApplicationStatus.ACCEPTED,
+      );
+      expect(analyticsService.updateApplicationMetrics).toHaveBeenCalledWith(
+        'project1',
+        ApplicationStatus.PENDING,
+        ApplicationStatus.ACCEPTED,
+      );
     });
 
     it('should throw NotFoundException if application not found', async () => {
@@ -192,12 +247,18 @@ describe('ApplicationsService', () => {
     it('should throw NotFoundException if professor is not project owner', async () => {
       const populatedApplication = {
         ...mockApplication,
-        project: { ...mockProject, professor: { id: 'different-prof' } },
+        project: {
+          id: 'project1',
+          professor: 'different-prof',
+        },
       };
 
-      jest.spyOn(applicationModel, 'findById').mockReturnValue({
-        populate: jest.fn().mockResolvedValue(populatedApplication),
-      } as any);
+      jest.spyOn(applicationModel, 'findById').mockImplementation(
+        () =>
+          ({
+            populate: jest.fn().mockResolvedValue(populatedApplication),
+          }) as any,
+      );
 
       await expect(
         service.updateStatus('prof1', 'app1', ApplicationStatus.ACCEPTED),
