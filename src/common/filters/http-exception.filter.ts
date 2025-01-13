@@ -1,39 +1,63 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Logger } from '@nestjs/common';
+/**
+ * Global HTTP exception filter
+ * Handles all HTTP exceptions and provides consistent error response formatting
+ * Includes logging for both client and server errors with contextual information
+ */
+
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Logger } from '@nestjs/common';
+
 import { Request, Response } from 'express';
 
 import { BaseException } from '../exceptions/base.exception';
+
+interface ErrorResponse {
+  statusCode: number;
+  timestamp: string;
+  path: string;
+  method: string;
+  message?: string;
+  code?: string;
+  details?: Record<string, any>;
+  requestId?: string;
+}
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  /**
+   * Catches and processes HTTP exceptions
+   * @param exception The caught exception
+   * @param host Arguments host for accessing request/response
+   */
+  catch(exception: HttpException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const status = exception.getStatus();
     const timestamp = new Date().toISOString();
 
-    // Get the error response
-    const errorResponse = this.getErrorResponse(exception);
-
-    // Build the error object
-    const error = {
+    // Construct standardized error response
+    const error: ErrorResponse = {
       statusCode: status,
       timestamp,
       path: request.url,
       method: request.method,
-      ...errorResponse,
-      requestId: request.headers['x-request-id'] || undefined,
+      ...this.getErrorResponse(exception),
+      requestId: (request.headers['x-request-id'] as string) || undefined,
     };
 
-    // Log the error with additional context
+    // Log error with context and send response
     this.logError(request, error, exception);
-
     response.status(status).json(error);
   }
 
-  private getErrorResponse(exception: HttpException) {
+  /**
+   * Extracts and formats error response based on exception type
+   * @param exception The HTTP exception
+   * @returns Formatted error response object
+   */
+  private getErrorResponse(exception: HttpException): Partial<ErrorResponse> {
     const exceptionResponse = exception.getResponse();
 
     if (exception instanceof BaseException) {
@@ -49,7 +73,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       : { message: exceptionResponse };
   }
 
-  private logError(request: Request, error: any, exception: HttpException) {
+  /**
+   * Logs error with appropriate severity and context
+   * @param request Express request object
+   * @param error Formatted error response
+   * @param exception Original exception
+   */
+  private logError(request: Request, error: ErrorResponse, exception: HttpException): void {
     const errorLog = {
       ...error,
       stack: exception.stack,

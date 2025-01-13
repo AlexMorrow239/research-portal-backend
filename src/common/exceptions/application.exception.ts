@@ -1,7 +1,15 @@
+/**
+ * Custom exceptions for application-related errors
+ * Provides specific error types for different application scenarios
+ */
+
 import { HttpStatus } from '@nestjs/common';
 
 import { BaseException } from './base.exception';
 
+/**
+ * Thrown when attempting to submit an application after the deadline
+ */
 export class ApplicationDeadlinePassedException extends BaseException {
   constructor(deadline: Date) {
     super(
@@ -15,6 +23,9 @@ export class ApplicationDeadlinePassedException extends BaseException {
   }
 }
 
+/**
+ * Thrown when attempting to access a non-existent application
+ */
 export class ApplicationNotFoundException extends BaseException {
   constructor(applicationId: string) {
     super(
@@ -28,6 +39,9 @@ export class ApplicationNotFoundException extends BaseException {
   }
 }
 
+/**
+ * Thrown when attempting to upload a file with an unsupported format
+ */
 export class InvalidFileTypeException extends BaseException {
   constructor(allowedTypes: string[]) {
     super(
