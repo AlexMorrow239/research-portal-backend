@@ -1,16 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import * as nodemailer from 'nodemailer';
 
 import { ApplicationStatus } from '@common/enums';
 
 import { ErrorHandler } from '@/common/utils/error-handler.util';
+import { DownloadTokenService } from '@/modules/file-storage/download-token.service';
 
 import { Application } from '../applications/schemas/applications.schema';
 
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
-import { EmailTrackingService } from './email-tracking.service';
 
 @Injectable()
 export class EmailService {
@@ -21,7 +22,8 @@ export class EmailService {
   constructor(
     private readonly emailConfigService: EmailConfigService,
     private readonly emailTemplateService: EmailTemplateService,
-    private readonly emailTrackingService: EmailTrackingService,
+    private readonly configService: ConfigService,
+    private readonly downloadTokenService: DownloadTokenService,
     private readonly logger: Logger,
   ) {
     const config = this.emailConfigService.getEmailConfig();
@@ -50,19 +52,15 @@ export class EmailService {
     projectTitle: string,
   ): Promise<void> {
     try {
-      const trackingToken = await this.emailTrackingService.createTrackingToken(
-        application.id,
-        application.project.toString(),
-      );
+      const projectId = application.project._id || application.project;
+      const professorId = application.project.professor._id || application.project.professor;
+
+      const resumeDownloadUrl = this.getResumeDownloadUrl(projectId, application.id, professorId);
 
       const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
         projectTitle,
-        application.studentInfo.name,
-        application.studentInfo.major1,
-        application.studentInfo.graduationDate.getFullYear().toString(),
-        application.additionalInfo.researchInterestDescription,
-        trackingToken,
-        application.id,
+        application,
+        resumeDownloadUrl,
       );
 
       await this.sendEmailWithRetry(professorEmail, subject, text);
@@ -73,6 +71,49 @@ export class EmailService {
         'send professor new application notification',
         { applicationId: application.id, professorEmail, projectTitle },
       );
+    }
+  }
+
+  private getResumeDownloadUrl(
+    projectId: string,
+    applicationId: string,
+    professorId: string,
+  ): string {
+    try {
+      const apiUrl = this.configService.get<string>('API_URL');
+      if (!apiUrl) {
+        throw new Error('API_URL environment variable is not configured');
+      }
+
+      if (!professorId) {
+        throw new Error('Professor ID is undefined');
+      }
+
+      // Extract just the ID if a full object is passed
+      const cleanProjectId = (projectId as any)?._id ?? projectId;
+      const cleanProfessorId = (professorId as any)?._id ?? professorId;
+
+      this.logger.debug('Generating download URL with:', {
+        projectId: cleanProjectId,
+        applicationId,
+        professorId: cleanProfessorId,
+        apiUrl,
+      });
+
+      const downloadToken = this.downloadTokenService.generateToken(
+        cleanProfessorId,
+        applicationId,
+      );
+      return `${apiUrl}/projects/${cleanProjectId}/applications/download/${downloadToken}`;
+    } catch (error) {
+      this.logger.error('Failed to generate download URL:', {
+        error: error.message,
+        stack: error.stack,
+        projectId,
+        applicationId,
+        professorId,
+      });
+      throw error;
     }
   }
 

@@ -1,6 +1,7 @@
-import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
+
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 

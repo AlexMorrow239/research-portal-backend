@@ -1,23 +1,25 @@
 import {
-  Controller,
-  Post,
   Body,
-  UseGuards,
-  Get,
-  Patch,
-  Param,
-  UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
-  MaxFileSizeValidator,
+  Controller,
   FileTypeValidator,
-  Query,
+  Get,
   HttpCode,
   HttpStatus,
+  MaxFileSizeValidator,
+  Param,
+  ParseFilePipe,
+  Patch,
+  Post,
+  Query,
   Res,
+  UnauthorizedException,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
+
 import { Response } from 'express';
 
 import { CreateApplicationDto, UpdateApplicationStatusDto } from '@/common/dto/applications';
@@ -25,20 +27,25 @@ import { ApplicationStatus } from '@/common/enums';
 import { ParseFormJsonPipe } from '@/common/pipes/parse-form-json.pipe';
 import {
   ApiCreateApplication,
+  ApiDownloadResume,
   ApiFindAllApplications,
   ApiUpdateApplicationStatus,
-  ApiDownloadResume,
 } from '@/common/swagger/decorators/applications.decorator';
+import { DownloadTokenService } from '@/modules/file-storage/download-token.service';
 
-import { ApplicationsService } from './applications.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from '../professors/decorators/get-professor.decorator';
 import { Professor } from '../professors/schemas/professors.schema';
 
+import { ApplicationsService } from './applications.service';
+
 @ApiTags('Applications')
 @Controller('projects/:projectId/applications')
 export class ApplicationsController {
-  constructor(private readonly applicationsService: ApplicationsService) {}
+  constructor(
+    private readonly applicationsService: ApplicationsService,
+    private readonly downloadTokenService: DownloadTokenService,
+  ) {}
 
   @Post()
   @UseInterceptors(FileInterceptor('resume'))
@@ -96,6 +103,23 @@ export class ApplicationsController {
     @Res() res: Response,
   ) {
     const fileData = await this.applicationsService.getResume(professor.id, applicationId);
+
+    res.setHeader('Content-Type', fileData.mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileData.fileName}"`);
+    return res.send(fileData.file);
+  }
+
+  @Get('download/:token')
+  async downloadResumeWithToken(@Param('token') token: string, @Res() res: Response) {
+    const tokenData = await this.downloadTokenService.verifyToken(token);
+    if (!tokenData) {
+      throw new UnauthorizedException('Invalid or expired download token');
+    }
+
+    const fileData = await this.applicationsService.getResume(
+      tokenData.professorId,
+      tokenData.applicationId,
+    );
 
     res.setHeader('Content-Type', fileData.mimeType);
     res.setHeader('Content-Disposition', `attachment; filename="${fileData.fileName}"`);

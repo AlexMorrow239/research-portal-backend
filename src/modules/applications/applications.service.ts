@@ -44,6 +44,12 @@ export class ApplicationsService {
     try {
       const project = await this.projectsService.findOne(projectId);
 
+      this.logger.debug('Creating application with project:', {
+        projectId,
+        professorId: project.professor?.id,
+        professorEmail: project.professor?.email,
+      });
+
       if (project.status !== ProjectStatus.PUBLISHED) {
         throw new BadRequestException('Project is not accepting applications');
       }
@@ -53,6 +59,8 @@ export class ApplicationsService {
       }
 
       const fileName = await this.fileStorageService.saveFile(resumeFile, `resumes`);
+
+      // Create the application
       const application = await this.applicationModel.create({
         project: projectId,
         studentInfo: createApplicationDto.studentInfo,
@@ -62,35 +70,36 @@ export class ApplicationsService {
         status: ApplicationStatus.PENDING,
       });
 
-      // Update analytics for new application
-      await this.analyticsService.updateApplicationMetrics(
-        projectId,
-        null, // No old status for new applications
-        ApplicationStatus.PENDING,
-      );
+      // Populate the application with project and professor data
+      const populatedApplication = await this.applicationModel.findById(application._id).populate({
+        path: 'project',
+        populate: {
+          path: 'professor',
+          select: 'email name department',
+        },
+      });
 
-      await this.emailService.sendApplicationConfirmation(application, project.title);
+      // Send confirmation emails
+      await this.emailService.sendApplicationConfirmation(populatedApplication, project.title);
       await this.emailService.sendProfessorNewApplication(
         project.professor.email,
-        application,
+        populatedApplication,
         project.title,
       );
 
-      this.logger.log(`Application created successfully for project ${projectId}`);
-      return application;
-    } catch (error) {
-      ErrorHandler.handleServiceError(
-        this.logger,
-        error,
-        'create application',
-        {
-          projectId,
-          ...(createApplicationDto?.studentInfo?.email && {
-            studentEmail: createApplicationDto.studentInfo.email,
-          }),
-        },
-        [BadRequestException, NotFoundException],
+      // Update analytics
+      await this.analyticsService.updateApplicationMetrics(
+        projectId,
+        null,
+        ApplicationStatus.PENDING,
       );
+
+      return populatedApplication;
+    } catch (error) {
+      ErrorHandler.handleServiceError(this.logger, error, 'create application', {
+        projectId,
+        studentEmail: createApplicationDto.studentInfo.email,
+      });
     }
   }
 
