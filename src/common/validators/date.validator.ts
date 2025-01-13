@@ -9,7 +9,6 @@ export function IsFutureDate(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any) {
-          // Remove console.log or replace with proper logging
           if (!(value instanceof Date)) {
             return false;
           }
@@ -25,7 +24,6 @@ export function IsFutureDate(validationOptions?: ValidationOptions) {
             dateToCheck.getDate(),
           );
 
-          // Remove console.log or replace with proper logging
           return checkDate >= today;
         },
       },

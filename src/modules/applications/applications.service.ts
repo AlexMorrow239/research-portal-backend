@@ -44,12 +44,6 @@ export class ApplicationsService {
     try {
       const project = await this.projectsService.findOne(projectId);
 
-      this.logger.debug('Creating application with project:', {
-        projectId,
-        professorId: project.professor?.id,
-        professorEmail: project.professor?.email,
-      });
-
       if (project.status !== ProjectStatus.PUBLISHED) {
         throw new BadRequestException('Project is not accepting applications');
       }

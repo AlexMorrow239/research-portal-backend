@@ -2,7 +2,6 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AnalyticsModule } from '@/modules/analytics/analytics.module';
-import { DownloadTokenModule } from '@/modules/file-storage/download-token.module';
 
 import { EmailModule } from '../email/email.module';
 import { FileStorageModule } from '../file-storage/file-storage.module';
@@ -19,7 +18,6 @@ import { Application, ApplicationSchema } from './schemas/applications.schema';
     FileStorageModule,
     EmailModule,
     AnalyticsModule,
-    DownloadTokenModule,
   ],
   providers: [ApplicationsService],
   controllers: [ApplicationsController],

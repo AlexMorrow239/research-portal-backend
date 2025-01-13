@@ -1,22 +1,22 @@
 import {
-  Controller,
-  Post,
   Body,
-  UseGuards,
-  Get,
-  Patch,
+  Controller,
   Delete,
-  Param,
-  Query,
+  FileTypeValidator,
+  Get,
   HttpCode,
   HttpStatus,
-  FileTypeValidator,
-  MaxFileSizeValidator,
-  ParseFilePipe,
-  UploadedFile,
-  UseInterceptors,
-  UnauthorizedException,
   Logger,
+  MaxFileSizeValidator,
+  Param,
+  ParseFilePipe,
+  Patch,
+  Post,
+  Query,
+  UnauthorizedException,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
@@ -29,20 +29,21 @@ import {
 } from '@/common/dto/projects';
 import {
   ApiCreateProject,
-  ApiFindAllProjects,
-  ApiFindProfessorProjects,
-  ApiFindOneProject,
-  ApiUpdateProject,
-  ApiRemoveProject,
-  ApiUploadProjectFile,
   ApiDeleteProjectFile,
+  ApiFindAllProjects,
+  ApiFindOneProject,
+  ApiFindProfessorProjects,
+  ApiRemoveProject,
+  ApiUpdateProject,
+  ApiUploadProjectFile,
 } from '@/common/swagger/decorators/projects.decorator';
 
-import { ProjectsService } from './projects.service';
-import { ProjectStatus } from './schemas/projects.schema';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from '../professors/decorators/get-professor.decorator';
 import { Professor } from '../professors/schemas/professors.schema';
+
+import { ProjectsService } from './projects.service';
+import { ProjectStatus } from './schemas/projects.schema';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -59,11 +60,6 @@ export class ProjectsController {
     @GetProfessor() professor: Professor,
     @Body() createProjectDto: CreateProjectDto,
   ): Promise<ProjectResponseDto> {
-    this.logger.debug('Creating project for professor:', {
-      professorId: professor._id,
-      professorEmail: professor.email,
-    });
-
     if (!professor._id) {
       this.logger.error('Professor ID is missing');
       throw new UnauthorizedException('Invalid professor data');

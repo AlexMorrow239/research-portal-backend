@@ -39,11 +39,6 @@ export class ProjectsService {
         throw new Error('Project data is undefined');
       }
 
-      this.logger.debug('Transforming project data:', {
-        projectId: project._id,
-        professorData: project.professor,
-      });
-
       return {
         id: project._id.toString(),
         title: project.title,
@@ -150,8 +145,6 @@ export class ProjectsService {
         [sortBy]: sortOrder === 'desc' ? -1 : 1,
       };
 
-      this.logger.debug('Finding projects with filter:', { filter, sortOptions });
-
       const [projects, total] = await Promise.all([
         this.projectModel
           .find(filter)
@@ -162,8 +155,6 @@ export class ProjectsService {
           .exec(),
         this.projectModel.countDocuments(filter),
       ]);
-
-      this.logger.debug(`Found ${projects.length} projects out of ${total} total`);
 
       return {
         projects: projects.map((project) => this.transformToProjectResponse(project)),

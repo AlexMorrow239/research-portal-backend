@@ -7,6 +7,7 @@ import { ApplicationStatus } from '@common/enums';
 
 import { ErrorHandler } from '@/common/utils/error-handler.util';
 import { DownloadTokenService } from '@/modules/file-storage/download-token.service';
+import { DownloadUrlService } from '@/modules/file-storage/download-url.service';
 
 import { Application } from '../applications/schemas/applications.schema';
 
@@ -24,6 +25,8 @@ export class EmailService {
     private readonly emailTemplateService: EmailTemplateService,
     private readonly configService: ConfigService,
     private readonly downloadTokenService: DownloadTokenService,
+    private readonly downloadUrlService: DownloadUrlService,
+
     private readonly logger: Logger,
   ) {
     const config = this.emailConfigService.getEmailConfig();
@@ -79,42 +82,7 @@ export class EmailService {
     applicationId: string,
     professorId: string,
   ): string {
-    try {
-      const apiUrl = this.configService.get<string>('API_URL');
-      if (!apiUrl) {
-        throw new Error('API_URL environment variable is not configured');
-      }
-
-      if (!professorId) {
-        throw new Error('Professor ID is undefined');
-      }
-
-      // Extract just the ID if a full object is passed
-      const cleanProjectId = (projectId as any)?._id ?? projectId;
-      const cleanProfessorId = (professorId as any)?._id ?? professorId;
-
-      this.logger.debug('Generating download URL with:', {
-        projectId: cleanProjectId,
-        applicationId,
-        professorId: cleanProfessorId,
-        apiUrl,
-      });
-
-      const downloadToken = this.downloadTokenService.generateToken(
-        cleanProfessorId,
-        applicationId,
-      );
-      return `${apiUrl}/projects/${cleanProjectId}/applications/download/${downloadToken}`;
-    } catch (error) {
-      this.logger.error('Failed to generate download URL:', {
-        error: error.message,
-        stack: error.stack,
-        projectId,
-        applicationId,
-        professorId,
-      });
-      throw error;
-    }
+    return this.downloadUrlService.generateDownloadUrl(projectId, applicationId, professorId);
   }
 
   async sendApplicationStatusUpdate(

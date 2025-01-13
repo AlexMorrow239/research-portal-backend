@@ -2,7 +2,7 @@ import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose'; // Add this
 
-import { DownloadTokenModule } from '@/modules/file-storage/download-token.module';
+import { FileStorageModule } from '@/modules/file-storage/file-storage.module';
 
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
@@ -15,7 +15,7 @@ import { EmailTracking, EmailTrackingSchema } from './schemas/email-tracking.sch
   imports: [
     ConfigModule,
     MongooseModule.forFeature([{ name: EmailTracking.name, schema: EmailTrackingSchema }]),
-    DownloadTokenModule,
+    FileStorageModule,
   ],
   controllers: [EmailTrackingController],
   providers: [EmailService, EmailConfigService, EmailTemplateService, EmailTrackingService, Logger],
