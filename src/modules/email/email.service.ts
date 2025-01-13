@@ -26,7 +26,6 @@ export class EmailService {
     private readonly configService: ConfigService,
     private readonly downloadTokenService: DownloadTokenService,
     private readonly downloadUrlService: DownloadUrlService,
-
     private readonly logger: Logger,
   ) {
     const config = this.emailConfigService.getEmailConfig();
@@ -35,12 +34,12 @@ export class EmailService {
 
   async sendApplicationConfirmation(application: Application, projectTitle: string): Promise<void> {
     try {
-      const { subject, text } = this.emailTemplateService.getApplicationConfirmationTemplate(
+      const { subject, text, html } = this.emailTemplateService.getApplicationConfirmationTemplate(
         projectTitle,
         application.studentInfo.name,
       );
 
-      await this.sendEmailWithRetry(application.studentInfo.email, subject, text);
+      await this.sendEmailWithRetry(application.studentInfo.email, subject, text, html);
     } catch (error) {
       ErrorHandler.handleServiceError(this.logger, error, 'send application confirmation', {
         applicationId: application.id,
@@ -60,13 +59,13 @@ export class EmailService {
 
       const resumeDownloadUrl = this.getResumeDownloadUrl(projectId, application.id, professorId);
 
-      const { subject, text } = this.emailTemplateService.getProfessorNotificationTemplate(
+      const { subject, text, html } = this.emailTemplateService.getProfessorNotificationTemplate(
         projectTitle,
         application,
         resumeDownloadUrl,
       );
 
-      await this.sendEmailWithRetry(professorEmail, subject, text);
+      await this.sendEmailWithRetry(professorEmail, subject, text, html);
     } catch (error) {
       ErrorHandler.handleServiceError(
         this.logger,
@@ -91,12 +90,12 @@ export class EmailService {
     status: ApplicationStatus,
   ): Promise<void> {
     try {
-      const { subject, text } = this.emailTemplateService.getApplicationStatusUpdateTemplate(
+      const { subject, text, html } = this.emailTemplateService.getApplicationStatusUpdateTemplate(
         projectTitle,
         status,
       );
 
-      await this.sendEmailWithRetry(studentEmail, subject, text);
+      await this.sendEmailWithRetry(studentEmail, subject, text, html);
     } catch (error) {
       ErrorHandler.handleServiceError(this.logger, error, 'send application status update', {
         studentEmail,
@@ -110,6 +109,7 @@ export class EmailService {
     to: string,
     subject: string,
     text: string,
+    html: string,
     retryCount = 0,
   ): Promise<void> {
     try {
@@ -117,7 +117,8 @@ export class EmailService {
         from: this.emailConfigService.getEmailConfig().from,
         to,
         subject,
-        text,
+        text, // Plain text version
+        html, // HTML version
         replyTo: this.emailConfigService.getEmailConfig().replyTo,
       });
       this.logger.log(`Email sent successfully to ${to}`);
@@ -127,7 +128,7 @@ export class EmailService {
           `Failed to send email to ${to}, retrying... (${retryCount + 1}/${this.MAX_RETRIES})`,
         );
         await new Promise((resolve) => setTimeout(resolve, this.RETRY_DELAY));
-        return this.sendEmailWithRetry(to, subject, text, retryCount + 1);
+        return this.sendEmailWithRetry(to, subject, text, html, retryCount + 1);
       }
 
       ErrorHandler.handleServiceError(this.logger, error, 'send email', {
@@ -140,9 +141,10 @@ export class EmailService {
 
   async sendProjectClosedNotification(studentEmail: string, projectTitle: string): Promise<void> {
     try {
-      const { subject, text } = this.emailTemplateService.getProjectClosedTemplate(projectTitle);
+      const { subject, text, html } =
+        this.emailTemplateService.getProjectClosedTemplate(projectTitle);
 
-      await this.sendEmailWithRetry(studentEmail, subject, text);
+      await this.sendEmailWithRetry(studentEmail, subject, text, html);
     } catch (error) {
       ErrorHandler.handleServiceError(this.logger, error, 'send project closed notification', {
         studentEmail,
