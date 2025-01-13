@@ -46,6 +46,7 @@ import { Professor } from '../professors/schemas/professors.schema';
 import { ProjectsService } from './projects.service';
 import { ProjectStatus } from './schemas/projects.schema';
 
+// Handles research project operations
 @ApiTags('Projects')
 @Controller('projects')
 export class ProjectsController {
@@ -53,6 +54,7 @@ export class ProjectsController {
 
   constructor(private readonly projectsService: ProjectsService) {}
 
+  // Create new research project
   @Post()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
@@ -69,6 +71,7 @@ export class ProjectsController {
     return await this.projectsService.create(professor, createProjectDto);
   }
 
+  // Get all projects with filters and pagination
   @Get()
   @ApiFindAllProjects()
   async findAll(
@@ -93,6 +96,7 @@ export class ProjectsController {
     });
   }
 
+  // Get professor's own projects
   @Get('my-projects')
   @UseGuards(JwtAuthGuard)
   @ApiFindProfessorProjects()
@@ -103,12 +107,14 @@ export class ProjectsController {
     return await this.projectsService.findProfessorProjects(professor.id, status);
   }
 
+  // Get single project by ID
   @Get(':id')
   @ApiFindOneProject()
   async findOne(@Param('id') id: string): Promise<ProjectResponseDto> {
     return await this.projectsService.findOne(id);
   }
 
+  // Update project details
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiUpdateProject()
@@ -120,6 +126,7 @@ export class ProjectsController {
     return await this.projectsService.update(professor.id, id, updateProjectDto);
   }
 
+  // Delete project
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -128,6 +135,7 @@ export class ProjectsController {
     return await this.projectsService.remove(professor.id, id);
   }
 
+  // Upload project file
   @Post(':id/files')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
@@ -148,6 +156,7 @@ export class ProjectsController {
     return await this.projectsService.addProjectFile(professor.id, id, file);
   }
 
+  // Delete project file
   @Delete(':id/files/:fileName')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -160,6 +169,7 @@ export class ProjectsController {
     return await this.projectsService.removeProjectFile(professor.id, id, fileName);
   }
 
+  // Close project and notify applicants
   @Patch(':id/close')
   @UseGuards(JwtAuthGuard)
   @ApiCloseProject()

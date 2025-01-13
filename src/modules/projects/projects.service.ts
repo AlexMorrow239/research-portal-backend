@@ -21,6 +21,7 @@ import { FileStorageService } from '../file-storage/file-storage.service';
 
 import { Project, ProjectStatus } from './schemas/projects.schema';
 
+// Handles research project business logic and data operations
 @Injectable()
 export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
@@ -33,6 +34,7 @@ export class ProjectsService {
     private readonly emailService: EmailService,
   ) {}
 
+  // Transforms project data to response format
   private transformToProjectResponse(project: Project): ProjectResponseDto {
     try {
       if (!project) {
@@ -69,20 +71,19 @@ export class ProjectsService {
     }
   }
 
+  // Create new research project
   async create(
     professor: Professor,
     createProjectDto: CreateProjectDto,
   ): Promise<ProjectResponseDto> {
     try {
       this.logger.log(`Creating project for professor ${professor._id}`);
-
       const project = await this.projectModel.create({
         ...createProjectDto,
         professor: professor._id,
       });
 
       const populatedProject = await project.populate('professor', 'name email department');
-
       this.logger.log(`Project created successfully by professor ${professor._id}`);
 
       return this.transformToProjectResponse(populatedProject);
@@ -93,6 +94,7 @@ export class ProjectsService {
     }
   }
 
+  // Find projects with filters and pagination
   async findAll(query: {
     page?: number;
     limit?: number;
@@ -115,12 +117,9 @@ export class ProjectsService {
         sortOrder = 'desc',
       } = query;
 
+      // Build filter conditions
       const filter: any = {};
-
-      if (status) {
-        filter.status = status;
-      }
-
+      if (status) filter.status = status;
       if (department) {
         const professors = await this.projectModel.db
           .collection('professors')
@@ -129,14 +128,12 @@ export class ProjectsService {
           .toArray();
         filter.professor = { $in: professors.map((prof) => prof._id) };
       }
-
       if (search) {
         filter.$or = [
           { title: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } },
         ];
       }
-
       if (researchCategories?.length > 0) {
         filter.researchCategories = { $in: researchCategories };
       }
@@ -145,6 +142,7 @@ export class ProjectsService {
         [sortBy]: sortOrder === 'desc' ? -1 : 1,
       };
 
+      // Execute query with pagination
       const [projects, total] = await Promise.all([
         this.projectModel
           .find(filter)
@@ -165,6 +163,7 @@ export class ProjectsService {
     }
   }
 
+  // Find single project by ID
   async findOne(id: string): Promise<ProjectResponseDto> {
     try {
       const project = await this.projectModel
@@ -184,6 +183,7 @@ export class ProjectsService {
     }
   }
 
+  // Update project details
   async update(
     professorId: string,
     projectId: string,
@@ -213,6 +213,7 @@ export class ProjectsService {
     }
   }
 
+  // Delete project and associated files
   async remove(professorId: string, projectId: string): Promise<void> {
     try {
       const project = await this.projectModel
@@ -226,6 +227,7 @@ export class ProjectsService {
         throw new NotFoundException("Project not found or you don't have permission to delete it");
       }
 
+      // Clean up associated files
       if (project?.files?.length > 0) {
         await Promise.all(
           project.files.map((file) => this.fileStorageService.deleteFile(file.fileName, true)),
@@ -244,6 +246,7 @@ export class ProjectsService {
     }
   }
 
+  // Find professor's projects with optional status filter
   async findProfessorProjects(
     professorId: string,
     status?: ProjectStatus,
@@ -264,6 +267,7 @@ export class ProjectsService {
     }
   }
 
+  // Add file to project
   async addProjectFile(
     professorId: string,
     projectId: string,
@@ -306,6 +310,7 @@ export class ProjectsService {
     }
   }
 
+  // Remove file from project
   async removeProjectFile(professorId: string, projectId: string, fileName: string): Promise<void> {
     try {
       const project = await this.projectModel.findOne({
@@ -324,9 +329,7 @@ export class ProjectsService {
         $pull: { files: { fileName } },
       });
 
-      this.logger.log(
-        `File ${fileName} removed from project ${projectId} by professor ${professorId}`,
-      );
+      this.logger.log(`File ${fileName} removed from project ${projectId}`);
     } catch (error) {
       ErrorHandler.handleServiceError(
         this.logger,
@@ -338,6 +341,7 @@ export class ProjectsService {
     }
   }
 
+  // Close project and notify applicants
   async closeProject(professorId: string, projectId: string): Promise<void> {
     try {
       const project = await this.projectModel.findOne({
@@ -349,32 +353,25 @@ export class ProjectsService {
         throw new NotFoundException("Project not found or you don't have permission to modify it");
       }
 
-      // Update project status to closed and hide it
       await this.projectModel.findByIdAndUpdate(projectId, {
         status: ProjectStatus.CLOSED,
         isVisible: false,
       });
 
-      // Get all pending applications for this project
       const applications = await this.applicationsService.findProjectApplications(
         professorId,
         projectId,
         ApplicationStatus.PENDING,
       );
 
-      // Send emails to all applicants
-      const emailPromises = applications.map((application) =>
-        this.emailService.sendProjectClosedNotification(
-          application.studentInfo.email,
-          project.title,
-        ),
-      );
-
       await Promise.all([
-        // Update all pending applications to closed
         this.applicationsService.closeProjectApplications(projectId),
-        // Send all notification emails in parallel
-        ...emailPromises,
+        ...applications.map((application) =>
+          this.emailService.sendProjectClosedNotification(
+            application.studentInfo.email,
+            project.title,
+          ),
+        ),
       ]);
 
       this.logger.log(`Project ${projectId} closed by professor ${professorId}`);
