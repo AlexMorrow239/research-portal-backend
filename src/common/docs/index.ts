@@ -15,6 +15,7 @@ export * from './descriptions/projects.description';
 // Export all decorators
 export * from './decorators/analytics.decorator';
 export * from './decorators/applications.decorator';
+export * from './decorators/auth.decorator';
 export * from './decorators/email.decorator';
 export * from './decorators/professors.decorator';
 export * from './decorators/projects.decorator';

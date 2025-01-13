@@ -9,6 +9,7 @@ import { ErrorHandler } from '@/common/utils/error-handler.util';
 
 import { Professor } from '../professors/schemas/professors.schema';
 
+// Handles authentication logic and JWT operations
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -18,6 +19,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  // Validates professor credentials
   async validateProfessor(email: string, password: string) {
     try {
       const professor = await this.professorModel.findOne({ email });
@@ -43,6 +45,7 @@ export class AuthService {
     }
   }
 
+  // Handles professor login and JWT token generation
   async login(email: string, password: string) {
     try {
       const professor = await this.validateProfessor(email, password);

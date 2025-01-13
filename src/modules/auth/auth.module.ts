@@ -3,12 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
 import { ProfessorsModule } from '../professors/professors.module';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { Professor, ProfessorSchema } from '../professors/schemas/professors.schema';
 
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { JwtStrategy } from './strategies/jwt.strategy';
+
+// Configures authentication module and dependencies
 @Module({
   imports: [
     ProfessorsModule,
