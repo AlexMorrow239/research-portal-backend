@@ -28,6 +28,7 @@ import {
   UpdateProjectDto,
 } from '@/common/dto/projects';
 import {
+  ApiCloseProject,
   ApiCreateProject,
   ApiDeleteProjectFile,
   ApiFindAllProjects,
@@ -157,5 +158,12 @@ export class ProjectsController {
     @GetProfessor() professor: Professor,
   ): Promise<void> {
     return await this.projectsService.removeProjectFile(professor.id, id, fileName);
+  }
+
+  @Patch(':id/close')
+  @UseGuards(JwtAuthGuard)
+  @ApiCloseProject()
+  async closeProject(@Param('id') id: string, @GetProfessor() professor: Professor): Promise<void> {
+    return await this.projectsService.closeProject(professor.id, id);
   }
 }

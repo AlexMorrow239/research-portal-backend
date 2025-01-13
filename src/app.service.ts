@@ -8,7 +8,7 @@ export class AppService {
 
   getRoot(): string {
     try {
-      return 'Research Portal API -- Go to /api for GUI';
+      return 'Research Engine API -- Go to /api for GUI';
     } catch (error) {
       ErrorHandler.handleServiceError(this.logger, error, 'get root message');
     }

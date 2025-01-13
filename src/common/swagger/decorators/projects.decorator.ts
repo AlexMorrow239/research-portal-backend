@@ -1,17 +1,17 @@
 import { HttpStatus, applyDecorators } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
-  ApiUnauthorizedResponse,
-  ApiBadRequestResponse,
-  ApiNotFoundResponse,
-  ApiForbiddenResponse,
   ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
 
@@ -310,5 +310,50 @@ export const ApiRemoveProject = () =>
     ApiResponse({
       status: HttpStatus.CONFLICT,
       description: ProjectDescriptions.responses.archiveError,
+    }),
+  );
+
+// ... existing imports ...
+
+export const ApiCloseProject = () =>
+  applyDecorators(
+    ApiBearerAuth(),
+    ApiOperation({
+      summary: 'Close project',
+      description: `
+        Close a research project and notify all applicants.
+        
+        Closing Process:
+        - Project status changes to CLOSED
+        - Project becomes hidden
+        - All pending applications are closed
+        - Email notifications sent to all applicants
+        - Project and applications remain in database
+        
+        Access Rules:
+        - Only project owner can close their project
+        - Cannot reopen a closed project
+        - All pending applications are automatically closed
+        
+        Note: This action cannot be undone.
+      `,
+    }),
+    ApiParam({
+      name: 'id',
+      description: 'Project ID',
+      example: '507f1f77bcf86cd799439011',
+    }),
+    ApiResponse({
+      status: HttpStatus.OK,
+      description: 'Project closed successfully and notifications sent',
+    }),
+    ApiUnauthorizedResponse({
+      description: ProjectDescriptions.responses.unauthorized,
+    }),
+    ApiForbiddenResponse({
+      description: ProjectDescriptions.responses.ownershipRequired,
+    }),
+    ApiNotFoundResponse({
+      description: ProjectDescriptions.responses.notFound,
     }),
   );

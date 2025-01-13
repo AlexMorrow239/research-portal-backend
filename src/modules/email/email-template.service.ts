@@ -92,7 +92,7 @@ export class EmailTemplateService {
 Thank you for submitting your application for "${projectTitle}". Your application has been received and the professor will contact you directly if they wish to proceed with your application.
 
 Best regards,
-Research Portal Team`;
+Research Engine Team`;
 
     const html = `
       <!DOCTYPE html>
@@ -111,7 +111,7 @@ Research Portal Team`;
               <p>Your application has been received and the professor will contact you directly if they wish to proceed with your application.</p>
             </div>
             <div class="footer">
-              <p>Best regards,<br>Research Portal Team</p>
+              <p>Best regards,<br>Research Engine Team</p>
             </div>
           </div>
         </body>
@@ -162,7 +162,7 @@ Resume: ${resumeDownloadUrl}
 Please contact the student directly if you wish to proceed with their application.
 
 Best regards,
-Research Portal Team`;
+Research Engine Team`;
 
     const html = `
       <!DOCTYPE html>
@@ -224,7 +224,8 @@ Research Portal Team`;
             </div>
             <div class="footer">
               <p>Please contact the student directly if you wish to proceed with their application.</p>
-              <p>Best regards,<br>Research Portal Team</p>
+              <p>If you accept a student for this position, they must complete the Self-Placement form available at <a href="https://ugr.miami.edu/research/placement/index.html" target="_blank">UGR Self-Placement Portal</a>.</p>
+              <p>Best regards,<br>Research Engine Team</p>
             </div>
           </div>
         </body>
@@ -240,7 +241,7 @@ Research Portal Team`;
 The research opportunity "${projectTitle}" is no longer available. Thank you for your interest.
 
 Best regards,
-Research Portal Team`;
+Research Engine Team`;
 
     const html = `
       <!DOCTYPE html>
@@ -260,7 +261,7 @@ Research Portal Team`;
               <p>Thank you for your interest in this opportunity.</p>
             </div>
             <div class="footer">
-              <p>Best regards,<br>Research Portal Team</p>
+              <p>Best regards,<br>Research Engine Team</p>
             </div>
           </div>
         </body>
@@ -294,7 +295,7 @@ Research Portal Team`;
               </div>
             </div>
             <div class="footer">
-              <p>Best regards,<br>Research Portal Team</p>
+              <p>Best regards,<br>Research Engine Team</p>
             </div>
           </div>
         </body>
@@ -302,7 +303,7 @@ Research Portal Team`;
     `;
 
     return {
-      subject: `Research Portal - Application Status Update for ${projectTitle}`,
+      subject: `Research Engine - Application Status Update for ${projectTitle}`,
       text,
       html,
     };

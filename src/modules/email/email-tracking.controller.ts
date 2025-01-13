@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
 import { Response } from 'express';
 
 import { CreateTestTokenDto } from '@/common/dto/email';
 import { ApiCreateTestToken, ApiGetEmailStats, ApiTrackEmailClick } from '@/common/swagger';
 
-import { EmailTrackingService } from './email-tracking.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
+import { EmailTrackingService } from './email-tracking.service';
 
 @ApiTags('Email Tracking')
 @Controller('api/track')
@@ -20,7 +22,7 @@ export class EmailTrackingController {
     res.send(`
       <html>
         <body>
-          <h1>Research Portal</h1>
+          <h1>Research Engine</h1>
           <p>The frontend is under construction. Please check back later.</p>
         </body>
       </html>

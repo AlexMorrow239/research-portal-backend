@@ -1,6 +1,6 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { CreateApplicationDto } from '@/common/dto/applications';
 
@@ -39,8 +39,8 @@ async function bootstrap() {
 
     // Swagger Setup
     const config = new DocumentBuilder()
-      .setTitle('Research Portal API')
-      .setDescription('University of Miami Research Portal API')
+      .setTitle('Research Engine API')
+      .setDescription('University of Miami Research Engine API')
       .setVersion('1.0')
       .addBearerAuth()
       .build();
