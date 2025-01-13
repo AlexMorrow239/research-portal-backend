@@ -21,20 +21,14 @@ class ApplicationFunnelStats {
   @ApiProperty({ example: 100 })
   totalApplications: number;
 
-  @ApiProperty({ example: 50 })
-  totalInterviews: number;
+  @ApiProperty({ example: 75 })
+  pendingApplications: number;
 
   @ApiProperty({ example: 25 })
-  totalAcceptedOffers: number;
-
-  @ApiProperty({ example: 10 })
-  totalDeclinedOffers: number;
+  closedApplications: number;
 
   @ApiProperty({ example: 25.0 })
-  interviewRate: number;
-
-  @ApiProperty({ example: 50.0 })
-  offerAcceptanceRate: number;
+  closeRate: number;
 }
 
 export class AnalyticsDto {

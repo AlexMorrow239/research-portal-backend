@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 @Schema({ timestamps: true })
@@ -9,6 +10,14 @@ export class ApplicationAnalytics extends Document {
   @Prop({ default: 0 })
   totalApplications: number;
 
+  // MVP status counts
+  @Prop({ default: 0 })
+  pendingApplications: number;
+
+  @Prop({ default: 0 })
+  closedApplications: number;
+
+  // Keep these for future use
   @Prop({ default: 0 })
   totalInterviews: number;
 

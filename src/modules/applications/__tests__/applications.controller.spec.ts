@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { Response } from 'express';
 
 import {
@@ -168,33 +169,6 @@ describe('ApplicationsController', () => {
       await expect(controller.findAll('invalid-project', mockProfessor as any)).rejects.toThrow(
         NotFoundException,
       );
-    });
-  });
-
-  describe('updateStatus', () => {
-    it('should update application status successfully', async () => {
-      jest.spyOn(service, 'updateStatus').mockResolvedValue(mockApplicationData as any);
-
-      const result = await controller.updateStatus('app1', mockProfessor as any, {
-        status: ApplicationStatus.ACCEPTED,
-      });
-
-      expect(result).toBe(mockApplicationData);
-      expect(service.updateStatus).toHaveBeenCalledWith(
-        mockProfessor.id,
-        'app1',
-        ApplicationStatus.ACCEPTED,
-      );
-    });
-
-    it('should handle application not found', async () => {
-      jest.spyOn(service, 'updateStatus').mockRejectedValue(new NotFoundException());
-
-      await expect(
-        controller.updateStatus('invalid-app', mockProfessor as any, {
-          status: ApplicationStatus.ACCEPTED,
-        }),
-      ).rejects.toThrow(NotFoundException);
     });
   });
 

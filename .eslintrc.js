@@ -33,17 +33,21 @@ module.exports = {
     'import/order': [
       'error',
       {
-        groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
         pathGroups: [
           { pattern: '@nestjs/**', group: 'external', position: 'before' },
-          { pattern: '@decorators/**', group: 'external', position: 'before' },
-          { pattern: '@common/**', group: 'internal' },
-          { pattern: '@modules/**', group: 'internal' },
-          { pattern: '@filters/**', group: 'internal' },
-          { pattern: '@pipes/**', group: 'internal' },
-          { pattern: '@swagger/**', group: 'internal' },
-          { pattern: '@validators/**', group: 'internal' },
+          { pattern: '@decorators/**', group: 'external', position: 'after' },
+          { pattern: '@common/**', group: 'internal', position: 'before' },
+          { pattern: '@modules/**', group: 'internal', position: 'after' },
+          { pattern: '@filters/**', group: 'internal', position: 'after' },
+          { pattern: '@pipes/**', group: 'internal', position: 'after' },
+          { pattern: '@swagger/**', group: 'internal', position: 'after' },
+          { pattern: '@validators/**', group: 'internal', position: 'after' },
+          // Handle relative imports explicitly
+          { pattern: './**', group: 'sibling', position: 'after' },
+          { pattern: '../**', group: 'parent', position: 'after' },
         ],
+        pathGroupsExcludedImportTypes: ['@nestjs', '@decorators'],
         'newlines-between': 'always',
         alphabetize: {
           order: 'asc',

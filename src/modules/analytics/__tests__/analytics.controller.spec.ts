@@ -39,11 +39,9 @@ describe('AnalyticsController', () => {
         },
         applicationFunnel: {
           totalApplications: 100,
-          totalInterviews: 50,
-          totalAcceptedOffers: 25,
-          totalDeclinedOffers: 10,
-          interviewRate: 50,
-          offerAcceptanceRate: 71.43,
+          pendingApplications: 75,
+          closedApplications: 25,
+          closeRate: 25,
         },
         lastUpdated: new Date(),
       };
@@ -69,11 +67,9 @@ describe('AnalyticsController', () => {
         },
         applicationFunnel: {
           totalApplications: 1000,
-          totalInterviews: 500,
-          totalAcceptedOffers: 250,
-          totalDeclinedOffers: 100,
-          interviewRate: 50,
-          offerAcceptanceRate: 71.43,
+          pendingApplications: 750,
+          closedApplications: 250,
+          closeRate: 25,
         },
         lastUpdated: new Date(),
       };

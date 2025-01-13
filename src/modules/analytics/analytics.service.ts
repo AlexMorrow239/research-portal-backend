@@ -1,12 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+
 import { Model } from 'mongoose';
 
 import { AnalyticsDto } from '@/common/dto/analytics/analytics.dto';
 import { ApplicationStatus } from '@/common/enums';
 
-import { ApplicationAnalytics } from './schemas/application-analytics.schema';
 import { EmailTrackingService } from '../email/email-tracking.service';
+
+import { ApplicationAnalytics } from './schemas/application-analytics.schema';
 
 @Injectable()
 export class AnalyticsService {
@@ -20,7 +22,7 @@ export class AnalyticsService {
 
   async updateApplicationMetrics(
     projectId: string,
-    oldStatus: ApplicationStatus,
+    oldStatus: ApplicationStatus | null,
     newStatus: ApplicationStatus,
   ) {
     try {
@@ -30,6 +32,8 @@ export class AnalyticsService {
         return await this.analyticsModel.create({
           project: projectId,
           totalApplications: 1,
+          pendingApplications: newStatus === ApplicationStatus.PENDING ? 1 : 0,
+          closedApplications: newStatus === ApplicationStatus.CLOSED ? 1 : 0,
         });
       }
 
@@ -37,19 +41,24 @@ export class AnalyticsService {
 
       // Handle new application
       if (!oldStatus) {
-        update.$inc = { totalApplications: 1 };
+        update.$inc = {
+          totalApplications: 1,
+          pendingApplications: newStatus === ApplicationStatus.PENDING ? 1 : 0,
+          closedApplications: newStatus === ApplicationStatus.CLOSED ? 1 : 0,
+        };
       }
-
       // Handle status changes
-      if (oldStatus !== newStatus) {
-        if (newStatus === ApplicationStatus.INTERVIEW) {
-          update.$inc = { ...update.$inc, totalInterviews: 1 };
+      else if (oldStatus !== newStatus) {
+        update.$inc = {};
+
+        // Decrement old status count
+        if (oldStatus === ApplicationStatus.PENDING) {
+          update.$inc.pendingApplications = -1;
         }
-        if (newStatus === ApplicationStatus.OFFER_ACCEPTED) {
-          update.$inc = { ...update.$inc, totalAcceptedOffers: 1 };
-        }
-        if (newStatus === ApplicationStatus.OFFER_DECLINED) {
-          update.$inc = { ...update.$inc, totalDeclinedOffers: 1 };
+
+        // Increment new status count
+        if (newStatus === ApplicationStatus.CLOSED) {
+          update.$inc.closedApplications = 1;
         }
       }
 
@@ -91,9 +100,8 @@ export class AnalyticsService {
             $group: {
               _id: null,
               totalApplications: { $sum: '$totalApplications' },
-              totalInterviews: { $sum: '$totalInterviews' },
-              totalAcceptedOffers: { $sum: '$totalAcceptedOffers' },
-              totalDeclinedOffers: { $sum: '$totalDeclinedOffers' },
+              pendingApplications: { $sum: '$pendingApplications' },
+              closedApplications: { $sum: '$closedApplications' },
             },
           },
         ]),
@@ -110,9 +118,8 @@ export class AnalyticsService {
   private formatAnalytics(applicationMetrics: any, emailMetrics: any): AnalyticsDto {
     const {
       totalApplications = 0,
-      totalInterviews = 0,
-      totalAcceptedOffers = 0,
-      totalDeclinedOffers = 0,
+      pendingApplications = 0,
+      closedApplications = 0,
     } = applicationMetrics;
 
     const { emailsSent = 0, uniqueViews = 0, totalClicks = 0 } = emailMetrics;
@@ -127,14 +134,9 @@ export class AnalyticsService {
       },
       applicationFunnel: {
         totalApplications,
-        totalInterviews,
-        totalAcceptedOffers,
-        totalDeclinedOffers,
-        interviewRate: totalApplications > 0 ? (totalInterviews / totalApplications) * 100 : 0,
-        offerAcceptanceRate:
-          totalAcceptedOffers + totalDeclinedOffers > 0
-            ? (totalAcceptedOffers / (totalAcceptedOffers + totalDeclinedOffers)) * 100
-            : 0,
+        pendingApplications,
+        closedApplications,
+        closeRate: totalApplications > 0 ? (closedApplications / totalApplications) * 100 : 0,
       },
       lastUpdated: new Date(),
     };

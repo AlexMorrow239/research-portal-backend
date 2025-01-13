@@ -1,13 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import * as nodemailer from 'nodemailer';
 
-import { ErrorHandler } from '@/common/utils/error-handler.util';
 import { ApplicationStatus } from '@common/enums';
+
+import { ErrorHandler } from '@/common/utils/error-handler.util';
+
+import { Application } from '../applications/schemas/applications.schema';
 
 import { EmailConfigService } from './config/email.config';
 import { EmailTemplateService } from './email-template.service';
 import { EmailTrackingService } from './email-tracking.service';
-import { Application } from '../applications/schemas/applications.schema';
 
 @Injectable()
 export class EmailService {
@@ -59,6 +62,7 @@ export class EmailService {
         application.studentInfo.graduationDate.getFullYear().toString(),
         application.additionalInfo.researchInterestDescription,
         trackingToken,
+        application.id,
       );
 
       await this.sendEmailWithRetry(professorEmail, subject, text);
@@ -121,6 +125,19 @@ export class EmailService {
         to,
         subject,
         retryCount,
+      });
+    }
+  }
+
+  async sendProjectClosedNotification(studentEmail: string, projectTitle: string): Promise<void> {
+    try {
+      const { subject, text } = this.emailTemplateService.getProjectClosedTemplate(projectTitle);
+
+      await this.sendEmailWithRetry(studentEmail, subject, text);
+    } catch (error) {
+      ErrorHandler.handleServiceError(this.logger, error, 'send project closed notification', {
+        studentEmail,
+        projectTitle,
       });
     }
   }

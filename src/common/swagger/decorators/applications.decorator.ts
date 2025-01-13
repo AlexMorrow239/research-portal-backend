@@ -1,15 +1,15 @@
 import { applyDecorators, HttpStatus } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
   ApiResponse,
   ApiUnauthorizedResponse,
-  ApiBadRequestResponse,
-  ApiNotFoundResponse,
   ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 
@@ -73,25 +73,11 @@ export const ApiUpdateApplicationStatus = () =>
     ApiBody({
       type: UpdateApplicationStatusDto,
       examples: {
-        accept: {
-          summary: 'Accept Application',
-          description: 'Accept a pending application',
+        close: {
+          summary: 'Close Application',
+          description: 'Close a pending application',
           value: {
-            status: ApplicationStatus.ACCEPTED,
-          },
-        },
-        reject: {
-          summary: 'Reject Application',
-          description: 'Reject a pending application',
-          value: {
-            status: ApplicationStatus.REJECTED,
-          },
-        },
-        withdraw: {
-          summary: 'Mark as Withdrawn',
-          description: 'Mark application as withdrawn by student',
-          value: {
-            status: ApplicationStatus.WITHDRAWN,
+            status: ApplicationStatus.CLOSED,
           },
         },
       },
@@ -108,13 +94,7 @@ export const ApiUpdateApplicationStatus = () =>
       description: ApplicationDescriptions.responses.notFound,
     }),
     ApiBadRequestResponse({
-      description: `Invalid request. Possible reasons:
-          - ${ApplicationDescriptions.responses.invalidTransition}
-          - ${ApplicationDescriptions.responses.alreadyProcessed}`,
-    }),
-    ApiResponse({
-      status: HttpStatus.UNPROCESSABLE_ENTITY,
-      description: 'Invalid status value provided',
+      description: ApplicationDescriptions.responses.invalidTransition,
     }),
   );
 

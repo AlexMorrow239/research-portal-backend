@@ -1,18 +1,25 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+
 import mongoose, { Model } from 'mongoose';
 
-import { ErrorHandler } from '@/common/utils/error-handler.util';
 import {
   CreateProjectDto,
   ProjectFileDto,
   ProjectResponseDto,
   UpdateProjectDto,
 } from '@common/dto/projects';
+
+import { ApplicationStatus } from '@/common/enums';
+import { ErrorHandler } from '@/common/utils/error-handler.util';
+import { ApplicationsService } from '@/modules/applications/applications.service';
+import { EmailService } from '@/modules/email/email.service';
+
 import { Professor } from '@modules/professors/schemas/professors.schema';
 
-import { Project, ProjectStatus } from './schemas/projects.schema';
 import { FileStorageService } from '../file-storage/file-storage.service';
+
+import { Project, ProjectStatus } from './schemas/projects.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -21,6 +28,9 @@ export class ProjectsService {
   constructor(
     @InjectModel(Project.name) private projectModel: Model<Project>,
     private readonly fileStorageService: FileStorageService,
+    @Inject(forwardRef(() => ApplicationsService))
+    private readonly applicationsService: ApplicationsService,
+    private readonly emailService: EmailService,
   ) {}
 
   private transformToProjectResponse(project: Project): ProjectResponseDto {
@@ -335,5 +345,39 @@ export class ProjectsService {
         [NotFoundException],
       );
     }
+  }
+
+  async closeProject(professorId: string, projectId: string): Promise<void> {
+    const project = await this.projectModel.findOne({
+      _id: projectId,
+      professor: professorId,
+    });
+
+    if (!project) {
+      throw new NotFoundException("Project not found or you don't have permission to modify it");
+    }
+
+    // Update project status to closed
+    await this.projectModel.findByIdAndUpdate(projectId, {
+      status: ProjectStatus.CLOSED,
+      isVisible: false,
+    });
+
+    // Get all pending applications for this project
+    const applications = await this.applicationsService.findProjectApplications(
+      professorId,
+      projectId,
+      ApplicationStatus.PENDING,
+    );
+
+    // Send emails to all applicants
+    const emailPromises = applications.map((application) =>
+      this.emailService.sendProjectClosedNotification(application.studentInfo.email, project.title),
+    );
+
+    await Promise.all(emailPromises);
+
+    // Update all pending applications to closed
+    await this.applicationsService.closeProjectApplications(projectId);
   }
 }

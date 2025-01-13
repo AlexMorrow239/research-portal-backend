@@ -1,15 +1,26 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { Model } from 'mongoose';
 
+import {
+  AcademicStanding,
+  ApplicationStatus,
+  Citizenship,
+  College,
+  ProjectLength,
+  WeeklyAvailability,
+} from '@common/enums';
+
+import { CreateApplicationDto } from '@/common/dto/applications';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
-import { ApplicationStatus } from '@common/enums';
 
 import { EmailService } from '../../email/email.service';
 import { FileStorageService } from '../../file-storage/file-storage.service';
 import { ProjectsService } from '../../projects/projects.service';
 import { ProjectStatus } from '../../projects/schemas/projects.schema';
+
 import { ApplicationsService } from '../applications.service';
 import { Application } from '../schemas/applications.schema';
 
@@ -21,19 +32,17 @@ describe('ApplicationsService', () => {
   let emailService: EmailService;
   let analyticsService: AnalyticsService;
 
-  const mockApplication = {
-    id: 'app1',
-    project: 'project1',
+  const mockApplication: CreateApplicationDto = {
     studentInfo: {
       name: { firstName: 'John', lastName: 'Doe' },
       email: 'john.doe@miami.edu',
       cNumber: 'C12345678',
-      phoneNumber: '123-456-7890',
-      racialEthnicGroups: ['GROUP1'],
-      citizenship: 'US_CITIZEN',
-      academicStanding: 'JUNIOR',
+      phoneNumber: '305-123-4567',
+      racialEthnicGroups: ['Hispanic/Latino'],
+      citizenship: Citizenship.US_CITIZEN,
+      academicStanding: AcademicStanding.JUNIOR,
       graduationDate: new Date(),
-      major1College: 'ARTS_SCIENCES',
+      major1College: College.ARTS_AND_SCIENCES,
       major1: 'Computer Science',
       hasAdditionalMajor: false,
       isPreHealth: false,
@@ -45,16 +54,16 @@ describe('ApplicationsService', () => {
       wednesdayAvailability: '9AM-5PM',
       thursdayAvailability: '9AM-5PM',
       fridayAvailability: '9AM-5PM',
-      weeklyHours: 'TWENTY',
-      desiredProjectLength: 'ONE_SEMESTER',
+      weeklyHours: WeeklyAvailability.NINE_TO_ELEVEN,
+      desiredProjectLength: ProjectLength.THREE,
     },
     additionalInfo: {
+      hasPrevResearchExperience: false,
+      researchInterestDescription: 'Test research interest',
       hasFederalWorkStudy: false,
       speaksOtherLanguages: false,
       comfortableWithAnimals: true,
     },
-    resumeFile: 'resume.pdf',
-    status: ApplicationStatus.PENDING,
   };
 
   const mockProject = {
@@ -119,8 +128,6 @@ describe('ApplicationsService', () => {
           provide: AnalyticsService,
           useValue: {
             updateApplicationMetrics: jest.fn(),
-            getProjectAnalytics: jest.fn(),
-            getGlobalAnalytics: jest.fn(),
           },
         },
       ],
@@ -140,11 +147,23 @@ describe('ApplicationsService', () => {
       jest.spyOn(fileStorageService, 'saveFile').mockResolvedValue('saved-resume.pdf');
       jest.spyOn(applicationModel, 'create').mockResolvedValue(mockApplication as any);
 
-      const result = await service.create('project1', {} as any, mockFile);
+      const result = await service.create('project1', mockApplication, mockFile);
 
       expect(result).toBe(mockApplication);
-      expect(emailService.sendApplicationConfirmation).toHaveBeenCalled();
-      expect(emailService.sendProfessorNewApplication).toHaveBeenCalled();
+      expect(emailService.sendApplicationConfirmation).toHaveBeenCalledWith(
+        mockApplication,
+        mockProject.title,
+      );
+      expect(emailService.sendProfessorNewApplication).toHaveBeenCalledWith(
+        mockProject.professor.email,
+        mockApplication,
+        mockProject.title,
+      );
+      expect(analyticsService.updateApplicationMetrics).toHaveBeenCalledWith(
+        'project1',
+        null,
+        ApplicationStatus.PENDING,
+      );
     });
 
     it('should throw BadRequestException if project is not published', async () => {
@@ -153,7 +172,7 @@ describe('ApplicationsService', () => {
         status: ProjectStatus.DRAFT,
       } as any);
 
-      await expect(service.create('project1', {} as any, mockFile)).rejects.toThrow(
+      await expect(service.create('project1', mockApplication, mockFile)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -164,7 +183,7 @@ describe('ApplicationsService', () => {
         applicationDeadline: '2020-01-01',
       } as any);
 
-      await expect(service.create('project1', {} as any, mockFile)).rejects.toThrow(
+      await expect(service.create('project1', mockApplication, mockFile)).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -172,9 +191,9 @@ describe('ApplicationsService', () => {
 
   describe('updateStatus', () => {
     it('should update application status successfully', async () => {
-      // Setup mock data with proper structure
       const populatedApplication = {
         ...mockApplication,
+        status: ApplicationStatus.PENDING,
         project: {
           id: 'project1',
           title: 'Test Project',
@@ -183,54 +202,33 @@ describe('ApplicationsService', () => {
             toString: () => 'prof1',
           },
         },
-        status: ApplicationStatus.PENDING,
-        studentInfo: {
-          email: 'student@miami.edu',
-        },
       };
 
       const updatedApplication = {
         ...populatedApplication,
-        status: ApplicationStatus.ACCEPTED,
+        status: ApplicationStatus.CLOSED,
       };
 
-      // Mock findById chain
-      jest.spyOn(applicationModel, 'findById').mockImplementation(
-        () =>
-          ({
-            populate: jest.fn().mockResolvedValue(populatedApplication),
-          }) as any,
-      );
+      jest.spyOn(applicationModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockResolvedValue(populatedApplication),
+      } as any);
 
-      // Mock findByIdAndUpdate chain
-      jest.spyOn(applicationModel, 'findByIdAndUpdate').mockImplementation(
-        () =>
-          ({
-            populate: jest.fn().mockResolvedValue(updatedApplication),
-          }) as any,
-      );
+      jest.spyOn(applicationModel, 'findByIdAndUpdate').mockReturnValue({
+        populate: jest.fn().mockResolvedValue(updatedApplication),
+      } as any);
 
-      const result = await service.updateStatus('prof1', 'app1', ApplicationStatus.ACCEPTED);
+      const result = await service.updateStatus('prof1', 'app1', ApplicationStatus.CLOSED);
 
-      // Verify the result
       expect(result).toEqual(updatedApplication);
-
-      // Verify all service calls were made
-      expect(applicationModel.findById).toHaveBeenCalledWith('app1');
-      expect(applicationModel.findByIdAndUpdate).toHaveBeenCalledWith(
-        'app1',
-        { status: ApplicationStatus.ACCEPTED },
-        { new: true },
-      );
-      expect(emailService.sendApplicationStatusUpdate).toHaveBeenCalledWith(
-        'student@miami.edu',
-        'Test Project',
-        ApplicationStatus.ACCEPTED,
-      );
       expect(analyticsService.updateApplicationMetrics).toHaveBeenCalledWith(
         'project1',
         ApplicationStatus.PENDING,
-        ApplicationStatus.ACCEPTED,
+        ApplicationStatus.CLOSED,
+      );
+      expect(emailService.sendApplicationStatusUpdate).toHaveBeenCalledWith(
+        mockApplication.studentInfo.email,
+        'Test Project',
+        ApplicationStatus.CLOSED,
       );
     });
 
@@ -239,64 +237,53 @@ describe('ApplicationsService', () => {
         populate: jest.fn().mockResolvedValue(null),
       } as any);
 
-      await expect(
-        service.updateStatus('prof1', 'app1', ApplicationStatus.ACCEPTED),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.updateStatus('prof1', 'app1', ApplicationStatus.CLOSED)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw NotFoundException if professor is not project owner', async () => {
-      const populatedApplication = {
-        ...mockApplication,
-        project: {
-          id: 'project1',
-          professor: 'different-prof',
-        },
-      };
+      jest.spyOn(applicationModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockResolvedValue({
+          ...mockApplication,
+          project: { professor: { id: 'different-prof' } },
+        }),
+      } as any);
 
-      jest.spyOn(applicationModel, 'findById').mockImplementation(
-        () =>
-          ({
-            populate: jest.fn().mockResolvedValue(populatedApplication),
-          }) as any,
+      await expect(service.updateStatus('prof1', 'app1', ApplicationStatus.CLOSED)).rejects.toThrow(
+        NotFoundException,
       );
-
-      await expect(
-        service.updateStatus('prof1', 'app1', ApplicationStatus.ACCEPTED),
-      ).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('getResume', () => {
-    describe('getResume', () => {
-      it('should return resume file successfully', async () => {
-        const mockFileData = {
-          buffer: Buffer.from('test file content'),
-          mimeType: 'application/pdf',
-        };
+    it('should return resume file successfully', async () => {
+      const mockFileData = {
+        buffer: Buffer.from('test file content'),
+        mimeType: 'application/pdf',
+      };
 
-        // Mock the populated application with proper professor ID structure
-        jest.spyOn(applicationModel, 'findById').mockReturnValue({
-          populate: jest.fn().mockResolvedValue({
-            ...mockApplication,
-            project: {
-              professor: {
-                id: 'prof1',
-                toString: () => 'prof1', // Add toString method to match comparison
-              },
+      jest.spyOn(applicationModel, 'findById').mockReturnValue({
+        populate: jest.fn().mockResolvedValue({
+          ...mockApplication,
+          project: {
+            professor: {
+              id: 'prof1',
+              toString: () => 'prof1',
             },
-            resumeFile: 'resume.pdf',
-          }),
-        } as any);
+          },
+          resumeFile: 'resume.pdf',
+        }),
+      } as any);
 
-        jest.spyOn(fileStorageService, 'getFile').mockResolvedValue(mockFileData);
+      jest.spyOn(fileStorageService, 'getFile').mockResolvedValue(mockFileData);
 
-        const result = await service.getResume('prof1', 'app1');
+      const result = await service.getResume('prof1', 'app1');
 
-        expect(result).toBeDefined();
-        expect(result.file).toEqual(mockFileData.buffer);
-        expect(result.fileName).toBe('resume.pdf');
-        expect(result.mimeType).toBe('application/pdf');
-      });
+      expect(result).toBeDefined();
+      expect(result.file).toEqual(mockFileData.buffer);
+      expect(result.fileName).toBe('resume.pdf');
+      expect(result.mimeType).toBe('application/pdf');
     });
 
     it('should throw NotFoundException if application not found', async () => {

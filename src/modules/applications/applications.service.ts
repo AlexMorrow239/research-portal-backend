@@ -1,17 +1,27 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+
 import { Model } from 'mongoose';
 
 import { ApplicationStatus } from '@/common/enums';
 import { ErrorHandler } from '@/common/utils/error-handler.util';
 import { AnalyticsService } from '@/modules/analytics/analytics.service';
 
-import { Application } from './schemas/applications.schema';
 import { CreateApplicationDto } from '../../common/dto/applications/create-application.dto';
+
 import { EmailService } from '../email/email.service';
 import { FileStorageService } from '../file-storage/file-storage.service';
 import { ProjectsService } from '../projects/projects.service';
 import { ProjectStatus } from '../projects/schemas/projects.schema';
+
+import { Application } from './schemas/applications.schema';
 
 @Injectable()
 export class ApplicationsService {
@@ -19,6 +29,7 @@ export class ApplicationsService {
 
   constructor(
     @InjectModel(Application.name) private applicationModel: Model<Application>,
+    @Inject(forwardRef(() => ProjectsService))
     private readonly projectsService: ProjectsService,
     private readonly fileStorageService: FileStorageService,
     private readonly emailService: EmailService,
@@ -229,6 +240,30 @@ export class ApplicationsService {
         error: error.message,
       });
       return 'application/octet-stream';
+    }
+  }
+
+  async closeProjectApplications(projectId: string): Promise<void> {
+    try {
+      this.logger.log(`Closing all pending applications for project ${projectId}`);
+
+      const result = await this.applicationModel.updateMany(
+        {
+          project: projectId,
+          status: ApplicationStatus.PENDING,
+        },
+        {
+          status: ApplicationStatus.CLOSED,
+        },
+      );
+
+      this.logger.log(
+        `Successfully closed ${result.modifiedCount} pending applications for project ${projectId}`,
+      );
+    } catch (error) {
+      ErrorHandler.handleServiceError(this.logger, error, 'close project applications', {
+        projectId,
+      });
     }
   }
 }

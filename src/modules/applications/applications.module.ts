@@ -1,19 +1,20 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AnalyticsModule } from '@/modules/analytics/analytics.module';
 
-import { ApplicationsController } from './applications.controller';
-import { ApplicationsService } from './applications.service';
-import { Application, ApplicationSchema } from './schemas/applications.schema';
 import { EmailModule } from '../email/email.module';
 import { FileStorageModule } from '../file-storage/file-storage.module';
 import { ProjectsModule } from '../projects/projects.module';
 
+import { ApplicationsController } from './applications.controller';
+import { ApplicationsService } from './applications.service';
+import { Application, ApplicationSchema } from './schemas/applications.schema';
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Application.name, schema: ApplicationSchema }]),
-    ProjectsModule,
+    forwardRef(() => ProjectsModule),
     FileStorageModule,
     EmailModule,
     AnalyticsModule,

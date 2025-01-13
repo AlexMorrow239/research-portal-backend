@@ -3,7 +3,10 @@ import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { createTestProfessor } from '../../../../test/utils/test-utils';
+import { ApplicationsService } from '../../applications/applications.service';
+import { EmailService } from '../../email/email.service';
 import { FileStorageService } from '../../file-storage/file-storage.service';
+
 import { ProjectsService } from '../projects.service';
 import { Project, ProjectStatus } from '../schemas/projects.schema';
 
@@ -11,6 +14,8 @@ describe('ProjectsService', () => {
   let service: ProjectsService;
   let projectModel: any;
   let fileStorageService: FileStorageService;
+  let applicationsService: ApplicationsService;
+  let emailService: EmailService;
 
   const mockProject = {
     _id: 'test-project-id',
@@ -90,12 +95,27 @@ describe('ProjectsService', () => {
             deleteFile: jest.fn(),
           },
         },
+        {
+          provide: ApplicationsService,
+          useValue: {
+            findProjectApplications: jest.fn(),
+            closeProjectApplications: jest.fn(),
+          },
+        },
+        {
+          provide: EmailService,
+          useValue: {
+            sendProjectClosedNotification: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<ProjectsService>(ProjectsService);
     projectModel = module.get(getModelToken(Project.name));
     fileStorageService = module.get<FileStorageService>(FileStorageService);
+    applicationsService = module.get<ApplicationsService>(ApplicationsService);
+    emailService = module.get<EmailService>(EmailService);
   });
 
   describe('create', () => {
@@ -108,6 +128,7 @@ describe('ProjectsService', () => {
         positions: 2,
         status: ProjectStatus.DRAFT,
         researchCategories: ['Category1'],
+        applicationDeadline: new Date(),
       };
 
       const mockPopulatedProject = {
