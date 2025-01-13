@@ -1,7 +1,7 @@
 {
   "name": "research-portal",
   "version": "0.0.1",
-  "description": "University of Miami Research Portal API",
+  "description": "University of Miami Research Engine API",
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/src/$1"
   },
