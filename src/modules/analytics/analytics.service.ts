@@ -6,8 +6,6 @@ import { Model } from 'mongoose';
 import { AnalyticsDto } from '@/common/dto/analytics/analytics.dto';
 import { ApplicationStatus } from '@/common/enums';
 
-import { EmailTrackingService } from '../email/email-tracking.service';
-
 import { ApplicationAnalytics } from './schemas/application-analytics.schema';
 
 @Injectable()
@@ -17,7 +15,6 @@ export class AnalyticsService {
   constructor(
     @InjectModel(ApplicationAnalytics.name)
     private analyticsModel: Model<ApplicationAnalytics>,
-    private readonly emailTrackingService: EmailTrackingService,
   ) {}
 
   async updateApplicationMetrics(
@@ -69,23 +66,11 @@ export class AnalyticsService {
       this.logger.error(`Failed to update analytics for project ${projectId}`, error.stack);
     }
   }
-
   async getProjectAnalytics(projectId: string): Promise<AnalyticsDto> {
     try {
-      const [applicationMetrics, emailMetrics] = await Promise.all([
-        this.analyticsModel.findOne({ project: projectId }),
-        this.emailTrackingService.getGlobalClickStats(),
-      ]);
+      const applicationMetrics = await this.analyticsModel.findOne({ project: projectId });
 
-      const projectEmailStats = emailMetrics.projectStats.find(
-        (stats) => stats.projectId === projectId,
-      ) || {
-        emailsSent: 0,
-        totalClicks: 0,
-        uniqueViews: 0,
-      };
-
-      return this.formatAnalytics(applicationMetrics, projectEmailStats);
+      return this.formatAnalytics(applicationMetrics);
     } catch (error) {
       this.logger.error(`Failed to get analytics for project ${projectId}`, error.stack);
       throw error;
@@ -94,44 +79,32 @@ export class AnalyticsService {
 
   async getGlobalAnalytics(): Promise<AnalyticsDto> {
     try {
-      const [applicationTotals, emailMetrics] = await Promise.all([
-        this.analyticsModel.aggregate([
-          {
-            $group: {
-              _id: null,
-              totalApplications: { $sum: '$totalApplications' },
-              pendingApplications: { $sum: '$pendingApplications' },
-              closedApplications: { $sum: '$closedApplications' },
-            },
+      const applicationTotals = await this.analyticsModel.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalApplications: { $sum: '$totalApplications' },
+            pendingApplications: { $sum: '$pendingApplications' },
+            closedApplications: { $sum: '$closedApplications' },
           },
-        ]),
-        this.emailTrackingService.getGlobalClickStats(),
+        },
       ]);
 
-      return this.formatAnalytics(applicationTotals[0] || {}, emailMetrics);
+      return this.formatAnalytics(applicationTotals[0] || {});
     } catch (error) {
       this.logger.error('Failed to get global analytics', error.stack);
       throw error;
     }
   }
 
-  private formatAnalytics(applicationMetrics: any, emailMetrics: any): AnalyticsDto {
+  private formatAnalytics(applicationMetrics: any): AnalyticsDto {
     const {
       totalApplications = 0,
       pendingApplications = 0,
       closedApplications = 0,
     } = applicationMetrics;
 
-    const { emailsSent = 0, uniqueViews = 0, totalClicks = 0 } = emailMetrics;
-
     return {
-      emailEngagement: {
-        totalEmails: emailsSent,
-        totalViews: uniqueViews,
-        totalClicks,
-        viewRate: emailsSent > 0 ? (uniqueViews / emailsSent) * 100 : 0,
-        averageClicksPerEmail: emailsSent > 0 ? totalClicks / emailsSent : 0,
-      },
       applicationFunnel: {
         totalApplications,
         pendingApplications,

@@ -7,14 +7,12 @@ import {
   ApplicationAnalytics,
   ApplicationAnalyticsSchema,
 } from './schemas/application-analytics.schema';
-import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ApplicationAnalytics.name, schema: ApplicationAnalyticsSchema },
     ]),
-    EmailModule,
   ],
   providers: [AnalyticsService],
   controllers: [AnalyticsController],
