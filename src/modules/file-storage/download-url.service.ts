@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { DownloadTokenService } from './download-token.service';
 
+// Generates secure URLs for file downloads
 @Injectable()
 export class DownloadUrlService {
   constructor(
@@ -20,7 +21,6 @@ export class DownloadUrlService {
 
       const cleanProjectId = this.extractId(projectId);
       const cleanProfessorId = this.extractId(professorId);
-
       const downloadToken = this.downloadTokenService.generateToken(
         cleanProfessorId,
         applicationId,

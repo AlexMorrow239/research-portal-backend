@@ -13,6 +13,7 @@ const ALLOWED_FILE_TYPES = [
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// Handles file operations with size and type validation
 @Injectable()
 export class FileStorageService {
   private readonly uploadDir: string;
@@ -33,6 +34,7 @@ export class FileStorageService {
     }
   }
 
+  // Save and validate uploaded files
   async saveFile(
     file: Express.Multer.File,
     subDir: string,
@@ -51,20 +53,14 @@ export class FileStorageService {
     }
 
     const fileName = `${Date.now()}-${file.originalname}`;
-    // If it's a project file, include 'projects' in the path, otherwise use the subDir directly
     const fullDir = isProjectFile
       ? join(this.uploadDir, 'projects', subDir)
       : join(this.uploadDir, subDir);
     const fullPath = join(fullDir, fileName);
 
     try {
-      // Create project-specific subdirectory if it doesn't exist
       await fs.mkdir(fullDir, { recursive: true });
-
-      // Write file
       await fs.writeFile(fullPath, file.buffer);
-
-      // Return path relative to uploads directory
       return isProjectFile ? join('projects', subDir, fileName) : join(subDir, fileName);
     } catch (error) {
       console.error('Error saving file:', error);
@@ -83,7 +79,6 @@ export class FileStorageService {
     try {
       const buffer = await fs.readFile(filePath);
       const mimeType = this.getMimeType(fileName);
-
       return { buffer, mimeType };
     } catch (error) {
       throw new NotFoundException('File not found');
@@ -99,7 +94,6 @@ export class FileStorageService {
       await fs.unlink(filePath);
     } catch (error) {
       if (error.code !== 'ENOENT') {
-        // Ignore if file doesn't exist
         console.error('Error deleting file:', error);
         throw new BadRequestException('Error deleting file');
       }

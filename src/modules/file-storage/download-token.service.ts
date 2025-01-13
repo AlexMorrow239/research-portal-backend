@@ -8,6 +8,7 @@ interface DownloadTokenPayload {
   type: 'download';
 }
 
+// Manages secure download tokens for file access
 @Injectable()
 export class DownloadTokenService {
   constructor(
@@ -34,9 +35,7 @@ export class DownloadTokenService {
         ignoreExpiration: true,
       });
 
-      if (payload.type !== 'download') {
-        return null;
-      }
+      if (payload.type !== 'download') return null;
 
       return {
         professorId: payload.professorId,
