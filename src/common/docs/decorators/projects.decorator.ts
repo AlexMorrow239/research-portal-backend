@@ -15,15 +15,16 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import { ProjectStatus } from '@/modules/projects/schemas/projects.schema';
 import {
   CreateProjectDto,
   ProjectFileDto,
   ProjectResponseDto,
   UpdateProjectDto,
-} from '@common/dto/projects';
+} from '@/common/dto/projects';
+import { ProjectStatus } from '@/modules/projects/schemas/projects.schema';
 
-import { ProjectDescriptions, createProjectExamples, updateProjectExamples } from '@common/docs';
+import { ProjectDescriptions } from '../descriptions/projects.description';
+import { createProjectExamples, updateProjectExamples } from '../examples/project.examples';
 
 export const ApiCreateProject = () =>
   applyDecorators(

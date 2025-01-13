@@ -1,31 +1,31 @@
 import {
+  Body,
   Controller,
-  Post,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
-  Body,
-  Get,
-  UseGuards,
   Patch,
-  Delete,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import {
+  ApiChangePassword,
+  ApiCreateProfessor,
+  ApiDeactivateAccount,
+  ApiGetProfile,
+  ApiReactivateAccount,
+  ApiUpdateProfile,
+} from '@/common/docs/decorators/professors.decorator';
+import {
+  ChangePasswordDto,
   CreateProfessorDto,
   ProfessorResponseDto,
-  UpdateProfessorDto,
-  ChangePasswordDto,
   ReactivateAccountDto,
+  UpdateProfessorDto,
 } from '@/common/dto/professors';
-import {
-  ApiCreateProfessor,
-  ApiGetProfile,
-  ApiUpdateProfile,
-  ApiChangePassword,
-  ApiDeactivateAccount,
-  ApiReactivateAccount,
-} from '@/common/swagger/decorators/professors.decorator';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { GetProfessor } from '@/modules/professors/decorators/get-professor.decorator';
 import { ProfessorsService } from '@/modules/professors/professors.service';

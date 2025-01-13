@@ -22,15 +22,15 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { Response } from 'express';
 
-import { CreateApplicationDto, UpdateApplicationStatusDto } from '@/common/dto/applications';
-import { ApplicationStatus } from '@/common/enums';
-import { ParseFormJsonPipe } from '@/common/pipes/parse-form-json.pipe';
 import {
   ApiCreateApplication,
   ApiDownloadResume,
   ApiFindAllApplications,
   ApiUpdateApplicationStatus,
-} from '@/common/swagger/decorators/applications.decorator';
+} from '@/common/docs/decorators/applications.decorator';
+import { CreateApplicationDto, UpdateApplicationStatusDto } from '@/common/dto/applications';
+import { ApplicationStatus } from '@/common/enums';
+import { ParseFormJsonPipe } from '@/common/pipes/parse-form-json.pipe';
 import { DownloadTokenService } from '@/modules/file-storage/download-token.service';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';

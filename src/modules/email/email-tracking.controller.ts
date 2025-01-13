@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Param, Post, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { Response } from 'express';
 
-import { CreateTestTokenDto } from '@/common/dto/email';
-import { ApiCreateTestToken, ApiGetEmailStats, ApiTrackEmailClick } from '@/common/swagger';
+import { ApiGetEmailStats, ApiTrackEmailClick } from '@/common/docs';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -34,15 +33,5 @@ export class EmailTrackingController {
   @ApiGetEmailStats()
   async getGlobalStats() {
     return await this.emailTrackingService.getGlobalClickStats();
-  }
-
-  @Post('test/create-token')
-  @UseGuards(JwtAuthGuard)
-  @ApiCreateTestToken()
-  async createTestToken(@Body() body: CreateTestTokenDto) {
-    return await this.emailTrackingService.createTestTrackingToken(
-      body.applicationId,
-      body.projectId,
-    );
   }
 }

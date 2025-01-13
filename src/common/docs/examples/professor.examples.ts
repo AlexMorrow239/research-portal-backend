@@ -1,3 +1,6 @@
+/**
+ * Professor registration examples for API documentation
+ */
 export const createProfessorExamples = {
   valid: {
     summary: 'Complete Professor Registration',
@@ -53,6 +56,9 @@ export const createProfessorExamples = {
   },
 };
 
+/**
+ * Professor profile update examples for API documentation
+ */
 export const updateProfessorExamples = {
   fullUpdate: {
     summary: 'Complete Profile Update',
@@ -90,6 +96,9 @@ export const updateProfessorExamples = {
   },
 };
 
+/**
+ * Password change examples for API documentation
+ */
 export const changePasswordExamples = {
   valid: {
     summary: 'Valid Password Change',
@@ -109,6 +118,9 @@ export const changePasswordExamples = {
   },
 };
 
+/**
+ * Account reactivation examples for API documentation
+ */
 export const reactivateExamples = {
   valid: {
     summary: 'Valid Reactivation Request',

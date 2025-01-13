@@ -7,7 +7,7 @@
       "@modules/*": ["src/modules/*"],
       "@filters/*": ["src/common/filters/*"],
       "@pipes/*": ["src/common/pipes/*"],
-      "@swagger/*": ["src/common/swagger/*"],
+      "@swagger/*": ["src/common/docs/*"],
       "@validators/*": ["src/common/validators/*"]
     },
     "module": "commonjs",

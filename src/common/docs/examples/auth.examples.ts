@@ -1,3 +1,6 @@
+/**
+ * Examples of authentication requests for API documentation
+ */
 export const loginExamples = {
   valid: {
     summary: 'Valid Login Credentials',

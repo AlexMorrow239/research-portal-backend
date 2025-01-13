@@ -22,12 +22,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 
 import {
-  CreateProjectDto,
-  ProjectFileDto,
-  ProjectResponseDto,
-  UpdateProjectDto,
-} from '@/common/dto/projects';
-import {
   ApiCloseProject,
   ApiCreateProject,
   ApiDeleteProjectFile,
@@ -37,7 +31,13 @@ import {
   ApiRemoveProject,
   ApiUpdateProject,
   ApiUploadProjectFile,
-} from '@/common/swagger/decorators/projects.decorator';
+} from '@/common/docs/decorators/projects.decorator';
+import {
+  CreateProjectDto,
+  ProjectFileDto,
+  ProjectResponseDto,
+  UpdateProjectDto,
+} from '@/common/dto/projects';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetProfessor } from '../professors/decorators/get-professor.decorator';
